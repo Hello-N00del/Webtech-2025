@@ -30,6 +30,7 @@ https://github.com/Hello-N00del/Webtech-2025.git
 - Installiere Git mit den Standard-Einstellungen.  
 - Nach Installation im Terminal prüfen:  
 *git --version*
+
 Es sollte eine Versionsnummer erscheinen
 
 ---
