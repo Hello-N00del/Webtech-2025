@@ -29,8 +29,8 @@ https://github.com/Hello-N00del/Webtech-2025.git
 - Webseite: https://git-scm.com/downloads  
 - Installiere Git mit den Standard-Einstellungen.  
 - Nach Installation im Terminal prüfen:  
-    git --version
-Es sollte eine Versionsnummer erscheinen.
+*git --version*
+Es sollte eine Versionsnummer erscheinen
 
 ---
 
@@ -77,7 +77,7 @@ Diese Plugins machen die Entwicklung, Git-Nutzung und den Umgang mit Vue und Typ
 
 Gib folgenden Befehl ein und drücke Enter:
 
-npm install
+*npm install*
 
 Das lädt alle benötigten Bibliotheken herunter. Warte, bis der Vorgang abgeschlossen ist.
 
@@ -85,7 +85,7 @@ Das lädt alle benötigten Bibliotheken herunter. Warte, bis der Vorgang abgesch
 
 Starte den Server mit:
 
-npm run dev
+*npm run dev*
 
 Nach einiger Zeit erscheint eine Adresse, z.B. `http://localhost:5173`. Öffne diese in deinem Webbrowser.
 
