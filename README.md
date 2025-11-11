@@ -54,6 +54,8 @@ Diese Plugins machen die Entwicklung, Git-Nutzung und den Umgang mit Vue und Typ
 | **Path Intellisense**| Automatische Pfad-Ergänzungen beim Import   |
 | **Debugger for Chrome** | Debugging direkt aus VSCode im Browser      |
 
+Hinweis: Für spätere Erweiterungen und eine erweiterte Entwicklung können weitere Plugins ergänzt werden. Derzeit sind die oben genannten Plugins ausreichend und fördern einen unkomplizierten Einstieg.
+
 ---
 
 ## 3. Projekt von GitHub klonen
