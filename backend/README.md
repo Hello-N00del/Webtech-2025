@@ -7,24 +7,43 @@ Node.js + Express + Prisma Backend für das Infoletter Management System.
 ## 🏗️ Architektur
 
 backend/
+
 ├── prisma/
+
 │ ├── schema.prisma # Datenbank-Schema
+
 │ └── migrations/ # Datenbank-Migrationen
+
 ├── src/
+
 │ ├── config/ # Konfiguration (DB, Env, Multer)
+
 │ ├── controllers/ # Request-Handler
+
 │ ├── middleware/ # Auth, Logging, Validation
+
 │ ├── routes/ # API-Routen
+
 │ ├── services/ # Business-Logik
+
 │ ├── utils/ # Hilfsfunktionen (JWT, Password, Validation)
+
 │ ├── types/ # TypeScript Type Definitions
+
 │ ├── app.ts # Express App Setup
+
 │ └── server.ts # Server Entry Point
+
 ├── tests/ # API-Tests (REST Client)
+
 ├── uploads/ # Hochgeladene Dateien (gitignored)
+
 ├── .env # Environment Variables (gitignored)
+
 ├── .env.example # Environment Template
+
 ├── package.json
+
 └── tsconfig.json
 
 ---

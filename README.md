@@ -7,8 +7,11 @@ Willkommen zum Webtech-2025 Projekt! Dies ist eine Full-Stack-Webanwendung zur V
 ## 🏗️ Projektstruktur
 
 Webtech-2025/
+
 ├── frontend/ # Vue 3 + TypeScript Frontend
+
 ├── backend/ # Node.js + Express + Prisma Backend
+
 └── README.md # Diese Datei
 
 ---

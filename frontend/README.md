@@ -7,19 +7,33 @@ Vue 3 + TypeScript Frontend für das Infoletter Management System.
 ## 🏗️ Projektstruktur
 
 frontend/
+
 ├── public/ # Statische Assets
+
 ├── src/
+
 │ ├── assets/ # Bilder, Styles, Icons
+
 │ ├── components/ # Vue-Komponenten
+
 │ ├── models/ # TypeScript Interfaces
+
 │ ├── router/ # Vue Router Konfiguration
+
 │ ├── services/ # API-Services
+
 │ ├── stores/ # Pinia State Management
+
 │ ├── views/ # Page-Komponenten
+
 │ ├── App.vue # Root-Komponente
+
 │ └── main.ts # App Entry Point
+
 ├── package.json
+
 ├── tsconfig.json
+
 └── vite.config.ts
 
 ---
