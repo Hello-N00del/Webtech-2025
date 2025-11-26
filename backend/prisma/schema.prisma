@@ -1,0 +1,175 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum InfoletterStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum CollaboratorRole {
+  OWNER
+  CO_AUTHOR
+  EDITOR
+  VIEWER
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  REGISTER
+  PASSWORD_RESET
+  EMAIL_VERIFY
+  INVITE_COLLABORATOR
+  REMOVE_COLLABORATOR
+  PUBLISH
+  UNPUBLISH
+}
+
+// ==================== USERS ====================
+model User {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  passwordHash        String    @map("password_hash")
+  name                String
+  role                UserRole  @default(USER)
+  profileImageUrl     String?   @map("profile_image_url")
+  emailVerified       Boolean   @default(false) @map("email_verified")
+  emailVerifyToken    String?   @unique @map("email_verify_token")
+  emailVerifyExpiry   DateTime? @map("email_verify_expiry")
+  passwordResetToken  String?   @unique @map("password_reset_token")
+  passwordResetExpiry DateTime? @map("password_reset_expiry")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  deletedAt           DateTime? @map("deleted_at") // Soft delete
+
+  // Relations
+  ownedInfoletters     Infoletter[]             @relation("InfoletterOwner")
+  collaborations       InfoletterCollaborator[]
+  refreshTokens        RefreshToken[]
+  auditLogs            AuditLog[]
+  infoletterVersions   InfoletterVersion[]
+
+  @@map("users")
+}
+
+// ==================== REFRESH TOKENS ====================
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// ==================== INFOLETTERS ====================
+model Infoletter {
+  id          String            @id @default(uuid())
+  ownerId     String            @map("owner_id")
+  title       String
+  content     String            @db.Text
+  status      InfoletterStatus  @default(DRAFT)
+  targetEmail String?           @map("target_email")
+  version     Int               @default(1) // Current version number
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  deletedAt   DateTime?         @map("deleted_at") // Soft delete
+  publishedAt DateTime?         @map("published_at")
+
+  // Relations
+  owner         User                       @relation("InfoletterOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  collaborators InfoletterCollaborator[]
+  images        InfoletterImage[]
+  versions      InfoletterVersion[]
+
+  @@map("infoletters")
+}
+
+// ==================== COLLABORATORS ====================
+model InfoletterCollaborator {
+  id           String           @id @default(uuid())
+  infoletterId String           @map("infoletter_id")
+  userId       String           @map("user_id")
+  role         CollaboratorRole
+  invitedAt    DateTime         @default(now()) @map("invited_at")
+
+  infoletter Infoletter @relation(fields: [infoletterId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([infoletterId, userId])
+  @@map("infoletter_collaborators")
+}
+
+// ==================== INFOLETTER VERSIONS (History/Branching) ====================
+model InfoletterVersion {
+  id              String    @id @default(uuid())
+  infoletterId    String    @map("infoletter_id")
+  versionNumber   Int       @map("version_number")
+  title           String
+  content         String    @db.Text
+  authorId        String    @map("author_id")
+  parentVersionId String?   @map("parent_version_id") // For branching
+  isMerged        Boolean   @default(false) @map("is_merged")
+  mergedAt        DateTime? @map("merged_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  infoletter    Infoletter         @relation(fields: [infoletterId], references: [id], onDelete: Cascade)
+  author        User               @relation(fields: [authorId], references: [id])
+  parentVersion InfoletterVersion? @relation("VersionBranch", fields: [parentVersionId], references: [id])
+  childVersions InfoletterVersion[] @relation("VersionBranch")
+
+  @@unique([infoletterId, versionNumber])
+  @@map("infoletter_versions")
+}
+
+// ==================== INFOLETTER IMAGES ====================
+model InfoletterImage {
+  id           String     @id @default(uuid())
+  infoletterId String     @map("infoletter_id")
+  filename     String
+  filepath     String
+  mimeType     String     @map("mime_type")
+  size         Int // in bytes
+  width        Int?
+  height       Int?
+  uploadedAt   DateTime   @default(now()) @map("uploaded_at")
+
+  infoletter Infoletter @relation(fields: [infoletterId], references: [id], onDelete: Cascade)
+
+  @@map("infoletter_images")
+}
+
+// ==================== AUDIT LOGS ====================
+model AuditLog {
+  id         String      @id @default(uuid())
+  userId     String?     @map("user_id") // Nullable for system events
+  action     AuditAction
+  entityType String?     @map("entity_type") // e.g., "Infoletter", "User"
+  entityId   String?     @map("entity_id")
+  details    String?     @db.Text // JSON string with additional info
+  ipAddress  String?     @map("ip_address")
+  userAgent  String?     @map("user_agent")
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
