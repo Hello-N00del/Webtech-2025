@@ -1,117 +1,275 @@
-# Webtech-2025 – Anfänger Setup Guide
+# Frontend – Webtech-2025
 
-Herzlich willkommen zum Projekt „Webtech-2025“. Dieser Guide hilft dir, das Projekt von GitHub zu klonen, alle nötigen Programme und VSCode-Erweiterungen zu installieren und danach das Projekt lokal auszuführen – auch wenn du noch nie mit GitHub, VSCode, Node.js oder Git gearbeitet hast.
-
----
-
-## 📌 Repository Link zum Klonen
-
-Das Projekt findest du hier auf GitHub (zum Klonen brauchst du diese URL):
-
-https://github.com/Hello-N00del/Webtech-2025.git
+Vue 3 + TypeScript Frontend für das Infoletter Management System.
 
 ---
 
-## 1. Programme installieren (einmalig)
+## 🏗️ Projektstruktur
 
-### Visual Studio Code (VSCode)
-
-- Webseite: https://code.visualstudio.com  
-- Lade es herunter und installiere es.
-
-### Node.js (JavaScript-Laufzeitumgebung)
-
-- Webseite: https://nodejs.org  
-- Installiere die **LTS-Version** (empfohlen).
-
-### Git (Versionskontrolle)
-
-- Webseite: https://git-scm.com/downloads  
-- Installiere Git mit den Standard-Einstellungen.  
-- Nach Installation im Terminal prüfen:  
-*git --version*
-
-Es sollte eine Versionsnummer erscheinen
+frontend/
+├── public/ # Statische Assets
+├── src/
+│ ├── assets/ # Bilder, Styles, Icons
+│ ├── components/ # Vue-Komponenten
+│ ├── models/ # TypeScript Interfaces
+│ ├── router/ # Vue Router Konfiguration
+│ ├── services/ # API-Services
+│ ├── stores/ # Pinia State Management
+│ ├── views/ # Page-Komponenten
+│ ├── App.vue # Root-Komponente
+│ └── main.ts # App Entry Point
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
 
 ---
 
-## 2. VSCode Erweiterungen (Plugins) installieren
+## 🚀 Installation & Setup
 
-Diese Plugins machen die Entwicklung, Git-Nutzung und den Umgang mit Vue und TypeScript viel einfacher. So geht’s:
+Siehe [Haupt-README](../README.md) für vollständige Installationsanleitung.
 
-1. Öffne VSCode  
-2. Klicke links auf das Symbol für **Extensions** (Symbol mit 4 Kästchen) oder drücke `Strg + Shift + X`  
-3. Suche nacheinander folgende Erweiterungen und installiere sie:
+### Schnellstart
 
-| Erweiterung         | Zweck                                       |
-|---------------------|---------------------------------------------|
-| **Volar**           | Vue 3 + TypeScript Unterstützung            |
-| **Prettier**        | Code-Formatierung (automatisch sauberer Code)|
-| **ESLint**          | Code-Qualität und Fehlerwarnungen            |
-| **Git Graph**       | Visuelle Git-Historie und einfache Bedienung |
-| **npm Intellisense**| Schnelle Vorschläge für npm Pakete           |
-| **Node.js Extension Pack** | Praktische Tools für Node.js Entwicklung|
-| **Path Intellisense**| Automatische Pfad-Ergänzungen beim Import   |
-| **Debugger for Chrome** | Debugging direkt aus VSCode im Browser      |
+Im frontend Ordner
+npm install
 
-Hinweis: Für spätere Erweiterungen und eine erweiterte Entwicklung können weitere Plugins ergänzt werden. Derzeit sind die oben genannten Plugins ausreichend und fördern einen unkomplizierten Einstieg.
+Development Server starten
+npm run dev
+
+Frontend läuft auf [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## 3. Projekt von GitHub klonen
+## 🛠️ Technologie-Stack
 
-1. Öffne VSCode  
-2. Klicke links unten auf das **Source Control** Symbol (oder drücke `Strg + Shift + G`)  
-3. Klicke oben auf **Repository klonen**  
-4. Füge diese URL ein:  
-    https://github.com/Hello-N00del/Webtech-2025.git
-5. Wähle einen Ordner auf deinem Computer aus, z.B. Desktop oder Dokumente  
-6. Klicke auf „Öffnen“, wenn VSCode fragt, ob das geklonte Projekt geöffnet werden soll  
-
----
-
-## 4. Projekt lokal starten
-
-### Terminal öffnen
-
-- Gehe in VSCode auf **Terminal > Neues Terminal**
-
-### Nötige Pakete installieren
-
-Gib folgenden Befehl ein und drücke Enter:
-
-*npm install*
-
-Das lädt alle benötigten Bibliotheken herunter. Warte, bis der Vorgang abgeschlossen ist.
-
-### Entwicklungsserver starten
-
-Starte den Server mit:
-
-*npm run dev*
-
-Nach einiger Zeit erscheint eine Adresse, z.B. `http://localhost:5173`. Öffne diese in deinem Webbrowser.
+- **Vue 3** – Composition API mit `<script setup>`
+- **TypeScript** – Typsicherheit
+- **Pinia** – State Management
+- **Vue Router** – Client-Side Routing
+- **Vite** – Build Tool & Dev Server
+- **Axios** 🚧 – HTTP Client (geplant)
 
 ---
 
-## 5. Git-Grundlagen
+## 📦 Verfügbare Scripts
 
-- `git status` – zeigt Änderungen an  
-- `git add .` – bereitet alle Änderungen zum Speichern vor  
-- `git commit -m "Kurze Nachricht"` – sichert Änderungen lokal  
-- `git push` – überträgt Änderungen zurück zu GitHub  
+Development
+npm run dev # Dev-Server mit Hot-Reload
 
-**Tipp:** Mit dem Plugin **Git Graph** kannst du diese Aktionen auch per Mausklick erledigen und deine Versionsgeschichte visuell ansehen.
+Build
+npm run build # Production Build
+npm run preview # Preview des Production Builds
 
----
+Linting & Formatting
+npm run lint # ESLint prüfen
+npm run format # Prettier formatieren
 
-## Hilfe & Tipps
-
-- Frag bitte dein Team oder erfahrene Personen, falls du irgendwo hängen bleibst.  
-- Offizielle Anleitungen:  
-  - [GitHub Docs](https://docs.github.com)  
-  - [VSCode Docs](https://code.visualstudio.com/docs)  
+Type Checking
+npm run type-check # TypeScript Typen prüfen
 
 ---
 
-Wir wünschen dir viel Erfolg und Spaß beim Programmieren mit Webtech-2025! 🚀
+## 🧩 Komponenten-Struktur
+
+### Models (TypeScript Interfaces)
+
+// src/models/User.ts
+export interface User {
+id: string;
+email: string;
+name: string;
+role: 'ADMIN' | 'USER';
+profileImageUrl?: string;
+}
+
+// src/models/Infoletter.ts
+export interface Infoletter {
+id: string;
+ownerId: string;
+title: string;
+content: string;
+status: 'DRAFT' | 'PUBLISHED';
+createdAt: string;
+updatedAt: string;
+}
+
+### Services (API-Integration)
+
+// src/services/authService.ts
+export const authService = {
+register(data: RegisterData) { /* ... / },
+login(credentials: LoginCredentials) { / ... / },
+logout() { / ... */ }
+}
+
+### Stores (Pinia)
+
+// src/stores/authStore.ts
+export const useAuthStore = defineStore('auth', () => {
+const user = ref<User | null>(null)
+const isAuthenticated = computed(() => !!user.value)
+
+function login(credentials: LoginCredentials) { /* ... / }
+function logout() { / ... */ }
+
+return { user, isAuthenticated, login, logout }
+})
+
+---
+
+## 🎨 Styling
+
+### CSS-Variablen
+
+Globale Design-Tokens in `src/assets/main.css`:
+
+:root {
+--color-primary: #42b883;
+--color-text: #2c3e50;
+--font-family: 'Inter', sans-serif;
+}
+
+### Scoped Styles
+
+<style scoped> /* Komponenten-spezifische Styles */ .button { background: var(--color-primary); } </style>
+
+---
+
+## 🔌 API-Integration
+
+### Backend-Verbindung
+
+Die Frontend-App kommuniziert mit dem Backend über REST-API:
+
+- **Development:** `http://localhost:3001`
+- **Production:** 🚧 (wird konfiguriert)
+
+### Axios Setup 🚧
+
+// src/services/api.ts (geplant)
+import axios from 'axios'
+
+const api = axios.create({
+baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
+headers: {
+'Content-Type': 'application/json'
+}
+})
+
+// Auth-Interceptor für JWT
+api.interceptors.request.use(config => {
+const token = localStorage.getItem('accessToken')
+if (token) {
+config.headers.Authorization = Bearer ${token}
+}
+return config
+})
+
+---
+
+## 🧪 Development Best Practices
+
+### Komponenten-Konventionen
+
+<script setup lang="ts"> // 1. Imports import { ref, computed } from 'vue' import type { User } from '@/models/User' // 2. Props & Emits interface Props { user: User } const props = defineProps<Props>() const emit = defineEmits<{ update: [user: User] }>() // 3. Reactive State const isEditing = ref(false) // 4. Computed Properties const displayName = computed(() => props.user.name) // 5. Functions function handleUpdate() { emit('update', props.user) } </script> <template> <!-- Template hier --> </template> <style scoped> /* Styles hier */ </style>
+
+### Naming Conventions
+
+- **Komponenten:** PascalCase (`UserProfile.vue`)
+- **Composables:** camelCase mit `use` Prefix (`useAuth.ts`)
+- **Stores:** camelCase mit `use` Prefix und `Store` Suffix (`useAuthStore.ts`)
+- **Services:** camelCase mit `Service` Suffix (`authService.ts`)
+
+---
+
+## 📱 Routing
+
+// src/router/index.ts
+const routes = [
+{
+path: '/',
+name: 'Home',
+component: () => import('@/views/HomeView.vue')
+},
+{
+path: '/login',
+name: 'Login',
+component: () => import('@/views/LoginView.vue')
+},
+{
+path: '/dashboard',
+name: 'Dashboard',
+component: () => import('@/views/DashboardView.vue'),
+meta: { requiresAuth: true }
+}
+]
+
+### Navigation Guards 🚧
+
+router.beforeEach((to, from, next) => {
+const authStore = useAuthStore()
+
+if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+next('/login')
+} else {
+next()
+}
+})
+
+---
+
+## 🔧 Environment Variables
+
+Erstelle `.env.local` für lokale Entwicklung:
+
+VITE_API_URL=http://localhost:3001
+VITE_APP_TITLE=Webtech-2025
+
+Verwendung im Code:
+
+const apiUrl = import.meta.env.VITE_API_URL
+
+---
+
+## 🎨 VSCode Extensions (empfohlen)
+
+- **Volar** – Vue 3 Language Support
+- **TypeScript Vue Plugin (Volar)** – TS Support in Vue
+- **ESLint** – Code Quality
+- **Prettier** – Code Formatting
+- **Vue VSCode Snippets** – Schnelle Snippets
+
+---
+
+## 🐛 Troubleshooting
+
+### Port bereits belegt
+
+Anderen Port verwenden
+npm run dev -- --port 5174
+
+### Type Errors
+
+TypeScript Cache löschen
+rm -rf node_modules/.vite
+npm run dev
+
+### Hot Reload funktioniert nicht
+
+Vite Cache löschen
+rm -rf node_modules/.vite
+npm install
+
+---
+
+## 📖 Weitere Ressourcen
+
+- [Vue 3 Dokumentation](https://vuejs.org/)
+- [Vue Router Docs](https://router.vuejs.org/)
+- [Pinia Docs](https://pinia.vuejs.org/)
+- [Vite Docs](https://vitejs.dev/)
+- [TypeScript Docs](https://www.typescriptlang.org/)
+
+---
+
+**Happy Coding! 🚀**
