@@ -1,0 +1,97 @@
+### Variables
+@baseUrl = http://localhost:3001
+@email = test@example.com
+@password = securePassword123
+
+### 1. Register User
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}",
+  "name": "Max Mustermann"
+}
+
+### 2. Verify Email (kopiere Token aus Console)
+GET {{baseUrl}}/api/auth/verify-email/DEIN-TOKEN-HIER
+
+### 3. Login
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 4. Refresh Token (verwendet Response von Login)
+@accessToken = {{login.response.body.accessToken}}
+@refreshToken = {{login.response.body.refreshToken}}
+
+POST {{baseUrl}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 5. Logout
+POST {{baseUrl}}/api/auth/logout
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 6. Forgot Password
+POST {{baseUrl}}/api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "{{email}}"
+}
+
+### 7. Reset Password (kopiere Token aus Console)
+POST {{baseUrl}}/api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "f4035a62-d48c-40cb-9825-7be6dd17f748",
+  "newPassword": "newSecurePassword456"
+}
+
+### 8. Login mit neuem Passwort
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "newSecurePassword456"
+}
+
+### === Negative Tests ===
+
+### 9. Doppelte Registrierung
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "password123",
+  "name": "Another User"
+}
+
+### 10. Login mit falschem Passwort
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "wrongPassword"
+}
+
+### 11. Invalider Verification Token
+GET {{baseUrl}}/api/auth/verify-email/invalid-token-12345
