@@ -10,8 +10,8 @@ import {
   patchRequest,
   deleteRequest
 } from './api'
-import type { Infoletter } from '@/models/infoletter'
-import type { ApiResponse, PaginatedResponse } from '@/types/api'
+import type { Infoletter } from '../models/infoletter'
+import type { ApiResponse, PaginatedResponse } from '../types/api'
 
 /**
  * Infoletter Query Parameters für Pagination und Filter

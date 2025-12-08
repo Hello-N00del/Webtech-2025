@@ -4,13 +4,13 @@
  */
 
 import { getRequest, postRequest, deleteRequest } from './api'
-import { tokenManager } from '@/utils/tokenManager'
+import { tokenManager } from '../utils/tokenManager'
 import type {
   AuthResponse,
   LoginRequest,
   RegisterRequest,
   ApiResponse
-} from '@/types/api'
+} from '../types/api'
 
 /**
  * User Info Response Type

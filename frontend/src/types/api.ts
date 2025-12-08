@@ -3,9 +3,7 @@
  * Standardisierte Response-Strukturen für Backend-Kommunikation
  */
 
-/**
- * Standard API Response Format
- */
+//Standard API Response Format
 export interface ApiResponse<T = any> {
   success: boolean
   data?: T
@@ -13,9 +11,7 @@ export interface ApiResponse<T = any> {
   errors?: Record<string, string[]>
 }
 
-/**
- * Standard API Error Response
- */
+//Standard API Error Response
 export interface ApiErrorResponse {
   success: false
   message: string
@@ -23,9 +19,7 @@ export interface ApiErrorResponse {
   statusCode: number
 }
 
-/**
- * Authentication Response (Login/Register)
- */
+//Authentication Response (Login/Register)
 export interface AuthResponse {
   accessToken: string
   refreshToken: string
@@ -38,33 +32,25 @@ export interface AuthResponse {
   }
 }
 
-/**
- * Login Request
- */
+//Login Request
 export interface LoginRequest {
   email: string
   password: string
 }
 
-/**
- * Register Request
- */
+//Register Request
 export interface RegisterRequest {
   email: string
   password: string
   name: string
 }
 
-/**
- * Refresh Token Request
- */
+//Refresh Token Request
 export interface RefreshTokenRequest {
   refreshToken: string
 }
 
-/**
- * Pagination Info
- */
+//Pagination Info
 export interface PaginationInfo {
   page: number
   pageSize: number
@@ -72,17 +58,13 @@ export interface PaginationInfo {
   totalPages: number
 }
 
-/**
- * Paginated Response
- */
+//Paginated Response
 export interface PaginatedResponse<T = any> {
   data: T[]
   pagination: PaginationInfo
 }
 
-/**
- * Axios Error with API structure
- */
+//Axios Error with API structure
 export interface AxiosApiError {
   response?: {
     status: number

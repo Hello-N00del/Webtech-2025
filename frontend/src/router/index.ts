@@ -4,8 +4,8 @@
 
 import { createRouter, createWebHistory } from 'vue-router'
 import type { Router, RouteRecordRaw } from 'vue-router'
-import type { CustomRouteMeta } from '@/types/router'
-import { useRouterGuards } from '@/composables/useRouterGuards'
+import type { CustomRouteMeta } from '../types/router'
+import { useRouterGuards } from '../composables/useRouterGuards'
 
 // Import Components
 import HelloWorld from '../components/HelloWorld.vue'

@@ -4,7 +4,7 @@
  */
 
 import type { AxiosError } from 'axios'
-import type { ApiErrorResponse } from '@/types/api'
+import type { ApiErrorResponse } from '../types/api'
 
 export class ApiError extends Error {
   public statusCode: number

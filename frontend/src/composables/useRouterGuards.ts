@@ -3,8 +3,8 @@
  * Wiederverwendbare Guards-Logik für Auth-Checks
  */
 
-import { authService } from '@/services/authService'
-import type { CustomRouteMeta } from '@/types/router'
+import { authService } from '../services/authService'
+import type { CustomRouteMeta } from '../types/router'
 
 export interface GuardCheckResult {
   allowed: boolean

@@ -5,9 +5,9 @@
  */
 
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
-import { tokenManager } from '@/utils/tokenManager'
-import { handleApiError, isAuthError } from '@/utils/apiErrorHandler'
-import type { ApiResponse, RefreshTokenRequest } from '@/types/api'
+import { tokenManager } from '../utils/tokenManager'
+import { handleApiError, isAuthError } from '../utils/apiErrorHandler'
+import type { ApiResponse, RefreshTokenRequest } from '../types/api'
 
 /**
  * Basis-URL für API-Requests
