@@ -60,7 +60,7 @@ router.beforeEach() ausgelöst
 checkRouteAccess(to.meta)
     ↓
 ┌─────────────┬────────────────────┐
-│ Allowed?    │ Action            │
+│ Allowed?    │ Action             │
 ├─────────────┼────────────────────┤
 │ false       │ Redirect zu Login  │
 │             │ mit return-URL     │
