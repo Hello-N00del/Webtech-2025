@@ -132,7 +132,7 @@ npm install
 Frontend starten
 npm run dev
 
-✅ Frontend läuft jetzt auf [http://localhost:5173](http://localhost:5173/public/)
+✅ Frontend läuft jetzt auf [http://localhost:5173/public/](http://localhost:5173/public/)
 
 ---
 
