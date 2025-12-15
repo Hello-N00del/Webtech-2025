@@ -10,11 +10,20 @@
 </template>
 
 <script lang="ts" setup>
-import { storeToRefs } from 'pinia';
-import { useInfoletterStore } from '../stores/infoletter';
+import { storeToRefs } from 'pinia'
+import { useInfoletterStore } from '../stores/infoletter'
+import type { Infoletter } from '../models/Infoletter'
 
-const infoletterStore = useInfoletterStore();
-const { infoletters } = storeToRefs(infoletterStore);
-
-// Optional: Infoletter beim Laden abrufen, später mit Service/API
+const infoletterStore = useInfoletterStore()
+const { infoletters } = storeToRefs(infoletterStore)
+// infoletters ist jetzt ein ref<Infoletter[]>
 </script>
+
+<style scoped>
+.infoletter {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-radius: 4px;
+}
+</style>

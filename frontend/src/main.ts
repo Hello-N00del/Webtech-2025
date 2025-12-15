@@ -1,10 +1,14 @@
 import { createApp } from 'vue';
-import App from './App.vue';
-import router from './router/index';
 import { createPinia } from 'pinia';
-import './style.css';
+import App from './App.vue';
+import './styles/globals.css';
+// optional, falls ihr einen Router habt
+// import router from './router';
 
 const app = createApp(App);
-app.use(createPinia());
-app.use(router);
+const pinia = createPinia();
+
+app.use(pinia);
+// app.use(router); // aktivieren, wenn Router benutzt wird
+
 app.mount('#app');
