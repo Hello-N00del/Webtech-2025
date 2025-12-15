@@ -13,6 +13,7 @@ import HelloWorld from '../components/HelloWorld.vue'
 import InfoletterFeed from '../components/InfoletterFeed.vue'
 import InfoletterForm from '../components/InfoletterForm.vue'
 import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
 
 /**
  * Route Definitions
@@ -25,6 +26,14 @@ const routes: Array<RouteRecordRaw> = [
     component: LoginView,
     meta: {
       title: 'Anmelden',
+      layout: 'auth'
+    } as CustomRouteMeta
+  },
+  {
+    path: '/register',
+    component: RegisterView,
+    meta: {
+      title: 'Registrieren',
       layout: 'auth'
     } as CustomRouteMeta
   },
@@ -85,8 +94,6 @@ const routes: Array<RouteRecordRaw> = [
       requiresAuth: true
     } as CustomRouteMeta
   }
-  // TODO: Register Page hinzufügen
-  // TODO: 404 Not Found Page hinzufügen
 ]
 
 const router: Router = createRouter({
