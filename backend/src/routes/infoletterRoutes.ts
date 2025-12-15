@@ -1,0 +1,26 @@
+import { Router } from 'express';
+import * as infoletterController from '../controllers/infoletterController.js';
+import { authenticate } from '../middleware/auth.js';
+import { upload } from '../config/multer.js';
+
+const router = Router();
+
+// All routes require authentication
+router.use(authenticate);
+
+// Infoletter CRUD
+router.get('/', infoletterController.getInfoletters);
+router.post('/', infoletterController.createInfoletter);
+router.get('/:id', infoletterController.getInfoletter);
+router.put('/:id', infoletterController.updateInfoletter);
+router.delete('/:id', infoletterController.deleteInfoletter);
+
+// Collaborators
+router.post('/:infoletterId/collaborators', infoletterController.addCollaborator);
+router.delete('/:infoletterId/collaborators/:userId', infoletterController.removeCollaborator);
+
+// Images
+router.post('/:infoletterId/images', upload.single('image'), infoletterController.uploadImage);
+router.delete('/images/:imageId', infoletterController.deleteImage);
+
+export default router;
