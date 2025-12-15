@@ -3,7 +3,6 @@
  * Zentraler State Management für Authentifizierung und User-Daten
  */
 
-
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { authService, type UserInfo } from '../services/authService'

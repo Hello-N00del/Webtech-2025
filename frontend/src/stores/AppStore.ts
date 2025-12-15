@@ -1,22 +1,11 @@
-// src/composables/useLogin.ts
-import { ref } from "vue"
-import { useAppStore } from "../stores/AppStore"
+// src/stores/AppStore.ts
+import { defineStore } from "pinia"
+import { useAuthStore } from "./authStore"
 
-export function useLogin() {
-  const appStore = useAppStore()
-  const auth = appStore.auth
-
-  const email = ref("")
-  const password = ref("")
-
-  const handleLogin = async () => {
-    await auth.login(email.value, password.value)
-  }
+export const useAppStore = defineStore("app", () => {
+  const auth = useAuthStore()
 
   return {
-    email,
-    password,
-    handleLogin,
     auth,
   }
-}
+})
