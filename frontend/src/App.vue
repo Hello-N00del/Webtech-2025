@@ -78,6 +78,7 @@
 import { useAuthStore } from './stores/authStore'
 import { Home, Mail } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
+import { onMounted, watch } from 'vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -90,4 +91,20 @@ const handleLogout = async () => {
     console.error('Logout failed:', error)
   }
 }
+
+// Debug logging
+onMounted(() => {
+  console.log('🟢 App.vue mounted')
+  console.log('isInitialized:', authStore.isInitialized)
+  console.log('isAuthenticated:', authStore.isAuthenticated)
+  console.log('Current route:', router.currentRoute.value.path)
+})
+
+watch(() => authStore.isInitialized, (newVal) => {
+  console.log('🔄 isInitialized changed to:', newVal)
+})
+
+watch(() => authStore.isAuthenticated, (newVal) => {
+  console.log('🔄 isAuthenticated changed to:', newVal)
+})
 </script>
