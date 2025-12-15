@@ -6,35 +6,17 @@ import type { CustomRouteMeta } from "../types/router"
 export function useRouterGuards() {
   const authStore = useAuthStore()
 
-  // ✅ NEW: Async version that waits for auth state
-  const checkRouteAccessAsync = async (meta: CustomRouteMeta) => {
-    // Give auth state a moment to update
-    // This is crucial for post-login redirects
-    await new Promise(resolve => setTimeout(resolve, 50))
-    
-    if (meta.requiresAuth && !authStore.isAuthenticated) {
-      return {
-        allowed: false,
-        reason: "AUTH_REQUIRED",
-        redirectTo: "/login"  // Changed from "/public" to "/login"
-      }
-    }
-
-    return {
-      allowed: true,
-      reason: null,
-      redirectTo: null
-    }
-  }
-
-  // Keep old sync version for backwards compatibility
   const checkRouteAccess = (meta: CustomRouteMeta) => {
-    if (meta.requiresAuth && !authStore.isAuthenticated) {
-      console.log('🔐 Auth required but not authenticated')
+    // ✅ NEW: Check if user is set (more reliable than isAuthenticated)
+    // User is set immediately after login in authStore.login()
+    const isAuth = !!authStore.user
+
+    if (meta.requiresAuth && !isAuth) {
+      console.log('🔐 Auth required but not authenticated, user:', authStore.user)
       return {
         allowed: false,
         reason: "AUTH_REQUIRED",
-        redirectTo: "/login"  // Changed from "/public"
+        redirectTo: "/login"
       }
     }
 
@@ -45,5 +27,5 @@ export function useRouterGuards() {
     }
   }
 
-  return { checkRouteAccess, checkRouteAccessAsync }
+  return { checkRouteAccess }
 }
