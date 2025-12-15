@@ -11,11 +11,11 @@
       <form @submit.prevent="handleLogin" class="space-y-6">
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1">
-            Benutzername
+            E‑Mail
           </label>
           <input
-            v-model="username"
-            type="text"
+            v-model="email"
+            type="email"
             class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
           />
@@ -46,15 +46,14 @@
 
 <script setup lang="ts">
 import { ref } from "vue"
-import { useAppStore } from "../stores/AppStore"
+import { useAuthStore } from "../stores/authStore" // Pfad ggf. anpassen
 
-const appStore = useAppStore()
-const auth = appStore.auth
+const authStore = useAuthStore()
 
-const username = ref("")
+const email = ref("")
 const password = ref("")
 
 const handleLogin = async () => {
-  await auth.login(username.value, password.value)
+  await authStore.login(email.value, password.value)
 }
 </script>

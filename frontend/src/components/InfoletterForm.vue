@@ -91,12 +91,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue"
-import { useAppStore } from "../stores/AppStore"
+import { ref, defineEmits } from "vue"
+import { useAppStore } from "../stores/AppStore" // ggf. in Thread-Store umbenennen
 import { Send, X } from "lucide-vue-next"
 
 const emit = defineEmits<{
-  close: []
+  (e: "close"): void
 }>()
 
 const store = useAppStore()
@@ -127,4 +127,3 @@ const handleSubmit = () => {
   }, 300)
 }
 </script>
-

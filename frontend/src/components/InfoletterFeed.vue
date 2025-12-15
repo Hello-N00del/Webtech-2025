@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue"
-import { useAppStore } from "../stores/AppStore"
+import { useAppStore } from "../stores/AppStore" // ggf. auf deinen Thread-Store anpassen
 import InfoletterForm from "./InfoletterForm.vue"
 
 const store = useAppStore()

@@ -20,7 +20,7 @@
         </div>
         <p class="text-slate-700 mb-4">4 aktive Diskussionen</p>
         <button
-          @click="$emit('navigate-forum')"
+          @click="emit('navigate-forum')"
           class="text-blue-600 hover:text-blue-700 inline-flex items-center gap-2 text-sm font-medium"
         >
           Zum Forum
@@ -38,7 +38,7 @@
         <h2 class="text-lg font-semibold text-slate-900 mb-2">Neuer Thread</h2>
         <p class="text-slate-700 mb-4">Starte direkt eine neue Diskussion im Forum.</p>
         <button
-          @click="$emit('open-new-thread')"
+          @click="emit('open-new-thread')"
           class="text-purple-600 hover:text-purple-700 inline-flex items-center gap-2 text-sm font-medium"
         >
           Thread erstellen
@@ -69,8 +69,8 @@
 <script setup lang="ts">
 import { MessageSquare, Mail, Users, ArrowRight } from "lucide-vue-next"
 
-defineEmits<{
-  "open-new-thread": []
-  "navigate-forum": []
+const emit = defineEmits<{
+  (e: "open-new-thread"): void
+  (e: "navigate-forum"): void
 }>()
 </script>

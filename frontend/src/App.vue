@@ -87,7 +87,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue"
-import { useAppStore } from "./stores/AppStore"
+import { useAuthStore } from "./stores/authStore" // Pfad ggf. anpassen
 import HelloWorld from "./components/HelloWorld.vue"
 import Dashboard from "./components/Dashboard.vue"
 import InfoletterFeed from "./components/InfoletterFeed.vue"
@@ -96,7 +96,7 @@ import { Home, MessageSquare } from "lucide-vue-next"
 
 type View = "dashboard" | "forum"
 
-const store = useAppStore()
+const store = useAuthStore()
 const currentView = ref<View>("dashboard")
 const showNewThread = ref(false)
 </script>
