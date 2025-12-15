@@ -121,13 +121,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
 
 type Mode = 'login' | 'register'
 
 const router = useRouter()
-const route = useRoute()
 const authStore = useAuthStore()
 
 const mode = ref<Mode>('login')
@@ -145,14 +144,6 @@ const registerForm = ref({
   password: ''
 })
 
-/**
- * ✅ Helper: Hole Redirect URL oder default
- */
-const getRedirectUrl = (): string => {
-  const redirect = route.query.redirect as string
-  return redirect && redirect !== '/public' ? redirect : '/infoletter'
-}
-
 const handleLogin = async () => {
   loading.value = true
   error.value = ''
@@ -164,13 +155,13 @@ const handleLogin = async () => {
       return
     }
 
+    console.log('🔑 Logging in...')
     await authStore.login(email, password)
-    
-    // ✅ FIX: Nutze redirect query parameter
-    const redirectUrl = getRedirectUrl()
-    console.log('Redirecting to:', redirectUrl)
-    router.push(redirectUrl)
+    console.log('✅ Login successful, waiting for redirect...')
+    // 🚀 NO router.push() here - let App.vue handle the redirect!
+    // This ensures the auth state is properly updated first
   } catch (err: any) {
+    console.error('❌ Login error:', err)
     error.value = err.message || 'Anmeldung fehlgeschlagen'
   } finally {
     loading.value = false
@@ -193,13 +184,12 @@ const handleRegister = async () => {
       return
     }
 
+    console.log('📝 Registering...')
     await authStore.register(email, password, name)
-    
-    // ✅ FIX: Nutze redirect query parameter
-    const redirectUrl = getRedirectUrl()
-    console.log('Redirecting to:', redirectUrl)
-    router.push(redirectUrl)
+    console.log('✅ Registration successful, waiting for redirect...')
+    // 🚀 NO router.push() here - let App.vue handle the redirect!
   } catch (err: any) {
+    console.error('❌ Registration error:', err)
     error.value = err.message || 'Registrierung fehlgeschlagen'
   } finally {
     loading.value = false
