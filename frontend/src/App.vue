@@ -21,7 +21,7 @@
         <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
           <div class="max-w-7xl mx-auto px-4 md:px-6 py-4">
             <div class="flex items-center justify-between">
-              <div>
+              <div class="flex-1">
                 <h1 class="text-2xl md:text-3xl font-bold tracking-tight">
                   Webtech-2025 Infoletter
                 </h1>
@@ -33,28 +33,31 @@
               <div class="flex items-center gap-3">
                 <!-- Navigation Links -->
                 <nav class="flex items-center gap-2">
+                  <!-- 📰 Öffentliche Infoletter Link -->
+                  <router-link
+                    to="/"
+                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-white/20 text-white hover:bg-white/30 transition border border-white/30"
+                    active-class="bg-white/40 border-white/50"
+                  >
+                    <span class="text-lg">📰</span>
+                    <span class="hidden md:inline">Öffentliche</span>
+                  </router-link>
+
+                  <!-- Dashboard Link -->
                   <router-link
                     to="/infoletter"
                     class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-white text-indigo-700 hover:bg-slate-100 transition"
-                    active-class="bg-slate-100"
+                    active-class="bg-slate-200"
                   >
                     <Home class="size-5" />
                     <span class="hidden md:inline">Dashboard</span>
-                  </router-link>
-                  <router-link
-                    to="/infoletter"
-                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-white text-indigo-700 hover:bg-slate-100 transition"
-                    active-class="bg-slate-100"
-                  >
-                    <Mail class="size-5" />
-                    <span class="hidden md:inline">Meine Infoletter</span>
                   </router-link>
                 </nav>
 
                 <!-- Logout Button -->
                 <button
                   @click="handleLogout"
-                  class="px-4 py-2 rounded-lg text-sm font-semibold bg-white text-indigo-700 hover:bg-slate-100 transition"
+                  class="px-4 py-2 rounded-lg text-sm font-semibold bg-red-500/80 text-white hover:bg-red-600 transition"
                 >
                   Abmelden
                 </button>
@@ -92,7 +95,7 @@
 import { useAuthStore } from './stores/authStore'
 import { useRouter, useRoute } from 'vue-router'
 import { computed, onMounted, watch } from 'vue'
-import { Home, Mail } from 'lucide-vue-next'
+import { Home } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -118,7 +121,7 @@ const handleLogout = async () => {
 
 // Debug logging
 onMounted(() => {
-  console.log('🟢 App.vue mounted')
+  console.log('🏠 App.vue mounted')
   console.log('isInitialized:', authStore.isInitialized)
   console.log('isAuthenticated:', authStore.isAuthenticated)
   console.log('Current route:', router.currentRoute.value.path)
