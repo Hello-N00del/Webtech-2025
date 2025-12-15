@@ -28,7 +28,7 @@ export interface InfoletterQueryParams {
  */
 export const infoletterService = {
   /**
-   * Alle Infoletters abrufen
+   * Alle Infoletters abrufen (private - nur eigene + collaborations)
    */
   async getAll(params?: InfoletterQueryParams): Promise<Infoletter[]> {
     try {
@@ -47,6 +47,19 @@ export const infoletterService = {
    */
   async fetchInfoletters(params?: InfoletterQueryParams): Promise<Infoletter[]> {
     return this.getAll(params)
+  },
+
+  /**
+   * ✅ Alle PUBLISHED Infoletters abrufen (public - für Dashboard)
+   */
+  async getPublished(): Promise<Infoletter[]> {
+    try {
+      const response = await getRequest<Infoletter[]>('/infoletters/public/published')
+      return Array.isArray(response) ? response : []
+    } catch (error) {
+      console.error('Error fetching published infoletters:', error)
+      throw error
+    }
   },
 
   /**
