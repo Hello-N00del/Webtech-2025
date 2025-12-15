@@ -24,3 +24,20 @@ export const updateUserSchema = z.object({
   name: z.string().min(2).optional(),
   email: z.string().email().optional(),
 });
+
+// Infoletter validators
+export const infoletterSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(255, 'Title too long'),
+  content: z.string().min(1, 'Content is required'),
+});
+
+export const updateInfoletterSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(255, 'Title too long'),
+  content: z.string().min(1, 'Content is required'),
+  status: z.enum(['DRAFT', 'PUBLISHED']).optional(),
+});
+
+export const collaboratorSchema = z.object({
+  userId: z.string().uuid('Invalid user ID'),
+  role: z.enum(['OWNER', 'CO_AUTHOR', 'EDITOR', 'VIEWER']),
+});
