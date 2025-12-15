@@ -5,9 +5,9 @@
       <div class="max-w-4xl mx-auto px-4 md:px-6 py-6">
         <div class="flex items-center justify-between">
           <div>
-            <router-link to="/infoletter" class="text-white/80 hover:text-white transition text-sm flex items-center gap-2">
+            <router-link to="/" class="text-white/80 hover:text-white transition text-sm flex items-center gap-2">
               <ArrowLeft class="size-4" />
-              Zum Dashboard
+              Zurück zur Startseite
             </router-link>
             <h1 class="text-3xl font-bold mt-2">{{ infoletter?.title || 'Newsletter' }}</h1>
             <p class="text-white/90 text-sm mt-1" v-if="infoletter?.publishedAt">
@@ -32,9 +32,9 @@
       <div v-else-if="error" class="p-6 bg-red-50 border-2 border-red-200 rounded-lg">
         <h2 class="text-lg font-bold text-red-900 mb-2">😞 Fehler beim Laden</h2>
         <p class="text-red-700 mb-4">{{ error }}</p>
-        <router-link to="/infoletter" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition inline-flex items-center gap-2">
+        <router-link to="/" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition inline-flex items-center gap-2">
           <ArrowLeft class="size-4" />
-          Zum Dashboard
+          Zur Startseite
         </router-link>
       </div>
 
@@ -58,7 +58,7 @@
         <div class="bg-white rounded-lg shadow-lg p-8 border border-slate-200">
           <h2 class="text-2xl font-bold text-slate-900 mb-6">📄 Newsletter Inhalt</h2>
           
-          <!-- ✅ Safe HTML rendering -->
+          <!-- Safe HTML rendering -->
           <div class="newsletter-content" v-html="infoletter.content"></div>
 
           <!-- Images Gallery -->
@@ -70,12 +70,17 @@
                 :key="image.id"
                 class="rounded-lg overflow-hidden shadow-md hover:shadow-lg transition"
               >
+                <!-- Debug Info -->
+                <div class="text-xs text-slate-500 p-2 bg-slate-100">
+                  {{ getImageUrl(image) }}
+                </div>
                 <img
                   :src="getImageUrl(image)"
                   :alt="image.filename"
                   @error="handleImageError($event, image)"
-                  class="w-full h-48 object-cover hover:scale-105 transition"
+                  class="w-full h-48 object-cover hover:scale-105 transition bg-slate-200"
                 />
+                <p class="text-xs text-slate-600 p-2">{{ image.filename }}</p>
               </div>
             </div>
           </div>
@@ -151,7 +156,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { infoletterService } from '../services/infoletterService'
 import { ArrowLeft } from 'lucide-vue-next'
 
@@ -190,7 +195,6 @@ interface Infoletter {
 }
 
 const route = useRoute()
-const router = useRouter()
 
 const infoletter = ref<Infoletter | null>(null)
 const loading = ref(false)
@@ -220,24 +224,46 @@ const loadInfoletter = async () => {
   }
 }
 
+// ✅ FIXED: Proper image URL handling
 const getImageUrl = (image: any): string => {
+  // Use .env variable for API URL
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
-  const backendUrl = apiUrl.replace('/api', '')
+  const backendUrl = apiUrl.replace('/api', '')  // Remove /api to get base URL
   
-  if (image.url) {
-    return image.url.startsWith('http') ? image.url : `${backendUrl}${image.url}`
+  console.log('🖼️ Image URL Debug:')
+  console.log('  apiUrl:', apiUrl)
+  console.log('  backendUrl:', backendUrl)
+  console.log('  image.filepath:', image.filepath)
+  console.log('  image.url:', image.url)
+  
+  // Prefer filepath or url - they should already include the path
+  if (image.filepath && image.filepath.startsWith('/')) {
+    const finalUrl = `${backendUrl}${image.filepath}`
+    console.log('  final URL:', finalUrl)
+    return finalUrl
   }
   
-  if (image.filepath) {
-    return image.filepath.startsWith('http') ? image.filepath : `${backendUrl}${image.filepath}`
+  if (image.url && image.url.startsWith('/')) {
+    const finalUrl = `${backendUrl}${image.url}`
+    console.log('  final URL:', finalUrl)
+    return finalUrl
   }
   
-  return `${backendUrl}/uploads/infoletter-images/${image.filename}`
+  // If both are absolute URLs, use as-is
+  if (image.filepath?.startsWith('http')) return image.filepath
+  if (image.url?.startsWith('http')) return image.url
+  
+  // Fallback
+  const fallbackUrl = `${backendUrl}/uploads/infoletter-images/${image.filename}`
+  console.log('  fallback URL:', fallbackUrl)
+  return fallbackUrl
 }
 
 const handleImageError = (event: Event, image: any) => {
+  const img = event.target as HTMLImageElement
   console.error('❌ Failed to load image:', image.filename)
-  console.error('URL was:', getImageUrl(image))
+  console.error('  Tried URL:', img.src)
+  console.error('  Status:', img.complete)
 }
 
 const formatDate = (dateString: string) => {
@@ -257,7 +283,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ✅ Safe HTML styling - Backend already sanitizes content */
 .newsletter-content :deep(p) {
   @apply text-slate-700 leading-relaxed my-4;
 }
