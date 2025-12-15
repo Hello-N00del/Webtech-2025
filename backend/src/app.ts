@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import authRoutes from './routes/authRoutes.js';
 import infoletterRoutes from './routes/infoletterRoutes.js';
+import { env } from './config/env.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -13,7 +14,7 @@ const app = express();
 
 // CORS Configuration
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:4173'],
+  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:4173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -24,8 +25,12 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static file serving for uploads
-app.use('/uploads', express.static(path.join(__dirname, '../../public/uploads')));
+// ✅ Static file serving for uploads
+// UPLOAD_DIR from env: 'public/uploads'
+// Resolve relative to project root (backend/)
+const uploadsPath = path.resolve(process.cwd(), env.UPLOAD_DIR);
+console.log(`📁 Serving uploads from: ${uploadsPath}`);
+app.use('/uploads', express.static(uploadsPath));
 console.log('✅ Static files serving enabled');
 
 // Log requests
