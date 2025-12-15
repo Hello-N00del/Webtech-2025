@@ -1,57 +1,79 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-    <div class="w-full max-w-2xl bg-white rounded-3xl shadow-xl p-10">
-      <h1 class="text-3xl font-bold text-slate-900 mb-3">
-        Webtech-2025 Infoletter
-      </h1>
-      <p class="text-slate-600 mb-8">
-        Melde dich an, um auf deine Infoletter zuzugreifen.
-      </p>
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 px-4 py-12">
+    <div class="w-full max-w-md">
+      <!-- Logo/Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-4xl font-bold text-slate-900 mb-2">
+          Webtech-2025
+        </h1>
+        <p class="text-slate-600">
+          Infoletter Management System
+        </p>
+      </div>
 
-      <form @submit.prevent="handleLogin" class="space-y-6">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">
-            E‑Mail
-          </label>
-          <input
-            v-model="email"
-            type="email"
-            class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            required
-          />
+      <!-- Login Card -->
+      <div class="bg-white rounded-2xl shadow-xl p-8">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6">
+          Anmelden
+        </h2>
+
+        <form @submit.prevent="handleLogin" class="space-y-5">
+          <!-- Email Field -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
+              E-Mail
+            </label>
+            <input
+              v-model="email"
+              type="email"
+              placeholder="beispiel@email.de"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <!-- Password Field -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">
+              Passwort
+            </label>
+            <input
+              v-model="password"
+              type="password"
+              placeholder="Dein Passwort"
+              class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <!-- Error Message -->
+          <div v-if="authStore.error" class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+            ❌ {{ authStore.error }}
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            :disabled="authStore.loading"
+            class="w-full flex justify-center items-center gap-2 px-4 py-3 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span v-if="authStore.loading" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+            {{ authStore.loading ? 'Wird angemeldet...' : 'Anmelden' }}
+          </button>
+        </form>
+
+        <!-- Register Link -->
+        <div class="mt-6 text-center text-sm text-slate-600">
+          Noch kein Account?
+          <router-link to="/register" class="text-indigo-600 hover:text-indigo-700 font-medium">
+            Jetzt registrieren
+          </router-link>
         </div>
+      </div>
 
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-1">
-            Passwort
-          </label>
-          <input
-            v-model="password"
-            type="password"
-            class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            required
-          />
-        </div>
-
-        <div v-if="authStore.error" class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-          ❌ {{ authStore.error }}
-        </div>
-
-        <button
-          type="submit"
-          :disabled="authStore.loading"
-          class="w-full flex justify-center items-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span v-if="authStore.loading" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-          {{ authStore.loading ? 'Wird angemeldet...' : 'Anmelden' }}
-        </button>
-      </form>
-
-      <div class="mt-6 text-center text-sm text-slate-600">
-        Noch kein Account?
-        <router-link to="/register" class="text-indigo-600 hover:text-indigo-700 font-medium">
-          Jetzt registrieren
-        </router-link>
+      <!-- Footer -->
+      <div class="mt-8 text-center text-xs text-slate-500">
+        <p>© 2025 Webtech-2025. Alle Rechte vorbehalten.</p>
       </div>
     </div>
   </div>
