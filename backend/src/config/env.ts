@@ -12,7 +12,7 @@ const envSchema = z.object({
   BASE_URL: z.string().url().default('http://localhost:3000'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   EMAIL_FROM: z.string().email(),
-  UPLOAD_DIR: z.string().default('uploads'),
+  UPLOAD_DIR: z.string().default('public/uploads'),
   MAX_FILE_SIZE: z.string().transform(Number).default('5242880'),
 });
 
