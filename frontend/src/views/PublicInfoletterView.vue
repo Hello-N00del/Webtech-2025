@@ -7,7 +7,7 @@
           <div>
             <router-link to="/infoletter" class="text-white/80 hover:text-white transition text-sm flex items-center gap-2">
               <ArrowLeft class="size-4" />
-              Zurück zum Dashboard
+              Zum Dashboard
             </router-link>
             <h1 class="text-3xl font-bold mt-2">{{ infoletter?.title || 'Newsletter' }}</h1>
             <p class="text-white/90 text-sm mt-1" v-if="infoletter?.publishedAt">
@@ -34,7 +34,7 @@
         <p class="text-red-700 mb-4">{{ error }}</p>
         <router-link to="/infoletter" class="px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition inline-flex items-center gap-2">
           <ArrowLeft class="size-4" />
-          Zurück zum Dashboard
+          Zum Dashboard
         </router-link>
       </div>
 
@@ -58,8 +58,8 @@
         <div class="bg-white rounded-lg shadow-lg p-8 border border-slate-200">
           <h2 class="text-2xl font-bold text-slate-900 mb-6">📄 Newsletter Inhalt</h2>
           
-          <!-- Content with sanitized HTML -->
-          <div class="prose prose-slate max-w-none" v-html="infoletter.content"></div>
+          <!-- ✅ Properly rendered content -->
+          <div class="newsletter-content" v-html="sanitizeContent(infoletter.content)"></div>
 
           <!-- Images Gallery -->
           <div v-if="infoletter.images && infoletter.images.length > 0" class="mt-8 pt-8 border-t-2 border-slate-200">
@@ -71,8 +71,9 @@
                 class="rounded-lg overflow-hidden shadow-md hover:shadow-lg transition"
               >
                 <img
-                  :src="image.filepath || image.url"
+                  :src="getImageUrl(image)"
                   :alt="image.filename"
+                  @error="handleImageError($event, image)"
                   class="w-full h-48 object-cover hover:scale-105 transition"
                 />
               </div>
@@ -153,6 +154,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { infoletterService } from '../services/infoletterService'
 import { ArrowLeft } from 'lucide-vue-next'
+import DOMPurify from 'dompurify'
 
 interface Infoletter {
   id: string
@@ -206,8 +208,10 @@ const loadInfoletter = async () => {
       return
     }
 
-    // Try to fetch from API
+    console.log('📄 Loading infoletter:', id)
     const data = await infoletterService.getById(id)
+    console.log('📄 Loaded data:', data)
+    
     infoletter.value = data as Infoletter
   } catch (err: any) {
     console.error('Error loading infoletter:', err)
@@ -215,6 +219,34 @@ const loadInfoletter = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// ✅ Sanitize HTML content to prevent XSS
+const sanitizeContent = (html: string): string => {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'a', 'img'],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt']
+  })
+}
+
+const getImageUrl = (image: any): string => {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+  const backendUrl = apiUrl.replace('/api', '')
+  
+  if (image.url) {
+    return image.url.startsWith('http') ? image.url : `${backendUrl}${image.url}`
+  }
+  
+  if (image.filepath) {
+    return image.filepath.startsWith('http') ? image.filepath : `${backendUrl}${image.filepath}`
+  }
+  
+  return `${backendUrl}/uploads/infoletter-images/${image.filename}`
+}
+
+const handleImageError = (event: Event, image: any) => {
+  console.error('❌ Failed to load image:', image.filename)
+  console.error('URL was:', getImageUrl(image))
 }
 
 const formatDate = (dateString: string) => {
@@ -234,34 +266,58 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Prose styling for newsletter content */
-:deep(.prose) {
-  @apply text-slate-700;
+.newsletter-content :deep(p) {
+  @apply text-slate-700 leading-relaxed my-4;
 }
 
-:deep(.prose h1),
-:deep(.prose h2),
-:deep(.prose h3),
-:deep(.prose h4),
-:deep(.prose h5),
-:deep(.prose h6) {
-  @apply text-slate-900 font-bold;
+.newsletter-content :deep(h1) {
+  @apply text-3xl font-bold text-slate-900 mt-8 mb-4;
 }
 
-:deep(.prose p) {
-  @apply text-slate-700 leading-relaxed;
+.newsletter-content :deep(h2) {
+  @apply text-2xl font-bold text-slate-900 mt-6 mb-3;
 }
 
-:deep(.prose a) {
-  @apply text-purple-600 hover:text-purple-700 font-medium;
+.newsletter-content :deep(h3) {
+  @apply text-xl font-bold text-slate-900 mt-5 mb-2;
 }
 
-:deep(.prose img) {
-  @apply rounded-lg shadow-md;
+.newsletter-content :deep(h4),
+.newsletter-content :deep(h5),
+.newsletter-content :deep(h6) {
+  @apply font-bold text-slate-900 mt-4 mb-2;
 }
 
-:deep(.prose ul),
-:deep(.prose ol) {
-  @apply text-slate-700;
+.newsletter-content :deep(ul),
+.newsletter-content :deep(ol) {
+  @apply text-slate-700 my-4 ml-6;
+}
+
+.newsletter-content :deep(li) {
+  @apply my-2 leading-relaxed;
+}
+
+.newsletter-content :deep(blockquote) {
+  @apply border-l-4 border-purple-600 pl-4 py-2 my-4 italic text-slate-600 bg-slate-50 py-4;
+}
+
+.newsletter-content :deep(a) {
+  @apply text-purple-600 hover:text-purple-700 underline;
+}
+
+.newsletter-content :deep(code) {
+  @apply bg-slate-100 px-2 py-1 rounded text-sm font-mono text-slate-900;
+}
+
+.newsletter-content :deep(pre) {
+  @apply bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto my-4;
+}
+
+.newsletter-content :deep(pre code) {
+  @apply bg-transparent px-0 py-0;
+}
+
+.newsletter-content :deep(img) {
+  @apply rounded-lg shadow-md my-4 max-w-full;
 }
 </style>
