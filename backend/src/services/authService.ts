@@ -80,14 +80,41 @@ export const registerUser = async (
     console.log(`🔶 Development mode: Auto-verified user ${email}`);
   }
 
+  // ✅ Generate tokens for registration (auto-login)
+  const payload: JWTPayload = {
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+  };
+
+  const accessToken = generateAccessToken(payload);
+  const refreshToken = generateRefreshToken(payload);
+
+  // Save refresh token
+  await prisma.refreshToken.create({
+    data: {
+      userId: user.id,
+      token: refreshToken,
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+    },
+  });
+
   // Log registration
   await logAudit(user.id, AuditAction.REGISTER, 'User', user.id, { email, name }, ipAddress, userAgent);
 
+  // ✅ Return same format as login
   return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
+    accessToken,
+    refreshToken,
+    expiresIn: 3600,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      profileImageUrl: user.profileImageUrl,
+      createdAt: user.createdAt.toISOString(),
+    },
   };
 };
 
