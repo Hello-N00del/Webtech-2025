@@ -10,7 +10,7 @@
 
     <!-- Router Content -->
     <template v-else>
-      <!-- Check if current route is a public page (landing, login, register) -->
+      <!-- Public Routes (Landing, Login, Register, Public Infoletter View) -->
       <template v-if="isPublicRoute">
         <!-- Full screen router view for public pages (no header/footer) -->
         <router-view />
@@ -98,9 +98,12 @@ const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 
-// Check if current route is public (no auth required)
+// ✅ Check if current route is public (no auth required)
+// Includes: Landing page, Login, Register, AND Public Infoletter Views
 const isPublicRoute = computed(() => {
   const publicRoutes = ['/', '/login', '/register', '/public']
+  // Also check for view routes (infoletter/:id/view is public)
+  if (route.path.includes('/view')) return true
   return publicRoutes.includes(route.path)
 })
 
