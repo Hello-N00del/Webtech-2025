@@ -6,6 +6,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
 } from '../utils/validators.js';
+import prisma from '../config/database.js';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -79,6 +80,35 @@ export const logout = async (req: Request, res: Response) => {
     res.json({ message: 'Logged out successfully' });
   } catch (err: any) {
     res.status(400).json({ error: err.message || 'Logout failed' });
+  }
+};
+
+export const getCurrentUser = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        profileImageUrl: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (err: any) {
+    console.error('Error fetching current user:', err);
+    res.status(500).json({ error: err.message || 'Failed to fetch current user' });
   }
 };
 
