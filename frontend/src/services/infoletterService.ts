@@ -7,7 +7,8 @@ import {
   getRequest,
   postRequest,
   putRequest,
-  deleteRequest
+  deleteRequest,
+  getPublicRequest
 } from './api'
 import type { Infoletter } from '../models/infoletter'
 
@@ -51,26 +52,41 @@ export const infoletterService = {
 
   /**
    * ✅ Alle PUBLISHED Infoletters abrufen (public - für Dashboard)
+   * Verwendet public API endpoint (OHNE Auth)
    */
   async getPublished(): Promise<Infoletter[]> {
     try {
-      const response = await getRequest<Infoletter[]>('/infoletters/public/published')
+      console.log('📄 Fetching published infoletters...')
+      const response = await getPublicRequest<Infoletter[]>('/infoletters/public/published')
+      console.log('📄 Published infoletters:', response)
       return Array.isArray(response) ? response : []
     } catch (error) {
-      console.error('Error fetching published infoletters:', error)
+      console.error('❌ Error fetching published infoletters:', error)
       throw error
     }
   },
 
   /**
-   * Einzelnen Infoletter abrufen
+   * ✅ Einzelnen Infoletter abrufen - PUBLIC VERSION
+   * Verwendet public API endpoint (OHNE Auth) für public views
+   * Falls die View URL ein /view enthält, nutze public API
    */
   async getById(id: string): Promise<Infoletter> {
     try {
-      const response = await getRequest<Infoletter>(`/infoletters/${id}`)
+      // Check if we're in a public view context
+      const isPublicView = typeof window !== 'undefined' && window.location.pathname.includes('/view')
+      
+      console.log(`📄 Fetching infoletter (ID: ${id}, public: ${isPublicView})...`)
+      
+      // Use public API for public views, regular API for authenticated views
+      const response = isPublicView
+        ? await getPublicRequest<Infoletter>(`/infoletters/public/${id}`)
+        : await getRequest<Infoletter>(`/infoletters/${id}`)
+      
+      console.log('📄 Loaded infoletter:', response)
       return response as Infoletter
     } catch (error) {
-      console.error('Error fetching infoletter:', error)
+      console.error('❌ Error fetching infoletter:', error)
       throw error
     }
   },
