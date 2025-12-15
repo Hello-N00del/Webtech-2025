@@ -8,7 +8,8 @@ import type { Router, RouteRecordRaw } from 'vue-router'
 import type { CustomRouteMeta } from '../types/router'
 import { useRouterGuards } from '../composables/useRouterGuards'
 
-// Import Components
+// Import Components/Views
+import LoginView from '../views/LoginView.vue'
 import HelloWorld from '../components/HelloWorld.vue'
 import InfoletterFeed from '../components/InfoletterFeed.vue'
 import InfoletterForm from '../components/InfoletterForm.vue'
@@ -18,6 +19,17 @@ import InfoletterForm from '../components/InfoletterForm.vue'
  * Nutzt CustomRouteMeta für Authentication
  */
 const routes: Array<RouteRecordRaw> = [
+  // Authentication Routes (no auth required)
+  {
+    path: '/login',
+    component: LoginView,
+    meta: {
+      title: 'Anmelden',
+      layout: 'auth'
+    } as CustomRouteMeta
+  },
+
+  // Protected Routes (require auth)
   {
     path: '/',
     redirect: '/dashboard',
@@ -65,6 +77,7 @@ const routes: Array<RouteRecordRaw> = [
       layout: 'default'
     } as CustomRouteMeta
   },
+  
   // Fallback für 404 - MUSS LETZTER EINTRAG SEIN!
   {
     path: '/:pathMatch(.*)*',
@@ -74,8 +87,6 @@ const routes: Array<RouteRecordRaw> = [
       layout: 'default'
     } as CustomRouteMeta
   }
-  // TODO: Login Page hinzufügen
-  // TODO: Register Page hinzufügen
 ]
 
 /**
