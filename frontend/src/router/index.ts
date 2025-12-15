@@ -122,7 +122,11 @@ const router: Router = createRouter({
   sensitive: false
 })
 
-router.beforeEach((to, from, next) => {
+// ✅ ASYNC beforeEach with delay for Pinia reactivity
+router.beforeEach(async (to, from, next) => {
+  // Give Pinia a moment to update reactivity
+  await new Promise(resolve => setTimeout(resolve, 10))
+  
   const { checkRouteAccess } = useRouterGuards()
   const result = checkRouteAccess(to.meta as CustomRouteMeta)
 
