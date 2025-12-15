@@ -4,281 +4,320 @@ Willkommen zum Webtech-2025 Projekt! Dies ist eine Full-Stack-Webanwendung zur V
 
 ---
 
-## 🏗️ Projektstruktur
+## 🎯 Quick Start - localhost Adressen
 
-Webtech-2025/
+| Service | URL | Status |
+|---------|-----|--------|
+| **Frontend (Vue 3)** | [http://localhost:5173/](http://localhost:5173/) | Öffentlich zugreifbar |
+| **Backend API** | [http://localhost:3001/api](http://localhost:3001/api) | Nur für Frontend |
+| **Test API Endpoint** | [http://localhost:3001/api/test](http://localhost:3001/api/test) | Debug |
+| **PostgreSQL** | localhost:5432 | Lokal |
 
-├── frontend/ # Vue 3 + TypeScript Frontend
-
-├── backend/ # Node.js + Express + Prisma Backend
-
-└── README.md # Diese Datei
+**👉 Gehe zu http://localhost:5173/ - KEINE `/api` oder `/app` anhängen!**
 
 ---
 
-## 🚀 Schnellstart
+## 🏗️ Projektstruktur
+
+```
+Webtech-2025/
+├── frontend/          # Vue 3 + TypeScript Frontend
+│   ├── src/
+│   │   ├── components/    # UI-Komponenten
+│   │   ├── views/         # Seiten (Login, etc.)
+│   │   ├── services/      # API-Kommunikation
+│   │   ├── stores/        # Pinia State Management
+│   │   ├── router/        # Vue Router Config
+│   │   └── App.vue        # Root Component
+│   └── vite.config.ts
+├── backend/           # Node.js + Express + Prisma Backend
+│   ├── src/
+│   │   ├── controllers/   # Request Handler
+│   │   ├── services/      # Business Logic
+│   │   ├── routes/        # API Routes
+│   │   ├── middleware/    # Auth, Error, etc.
+│   │   └── config/        # Database, Env
+│   ├── prisma/
+│   │   └── schema.prisma  # Datenbank Schema
+│   └── package.json
+└── README.md
+```
+
+---
+
+## 🚀 Installation & Setup (5 Minuten)
 
 ### Voraussetzungen
 
 Folgende Software muss installiert sein:
 
-- **Node.js** (v18 oder höher) – [Download](https://nodejs.org)
-- **PostgreSQL** (v14 oder höher) – [Download](https://www.postgresql.org/download/)
-- **Git** – [Download](https://git-scm.com/downloads)
-- **Visual Studio Code** (empfohlen) – [Download](https://code.visualstudio.com)
+- **Node.js** (v18+) → [Download](https://nodejs.org)
+- **PostgreSQL** (v14+) → [Download](https://www.postgresql.org/download/)
+- **Git** → [Download](https://git-scm.com/downloads)
+- **VSCode** (empfohlen) → [Download](https://code.visualstudio.com)
 
----
+### 1️⃣ Repository klonen
 
-## 📦 Installation
-
-### 1. Repository klonen
-
+```bash
 git clone https://github.com/Hello-N00del/Webtech-2025.git
 cd Webtech-2025
+```
 
-### 2. PostgreSQL Datenbank einrichten
+### 2️⃣ PostgreSQL Datenbank einrichten
 
-#### Windows
+#### Windows / macOS / Linux
 
-1. **PostgreSQL installieren**
-   - Lade PostgreSQL von [https://www.postgresql.org/download/windows/](https://www.postgresql.org/download/windows/) herunter
-   - Installiere mit den Standard-Einstellungen
-   - Merke dir das **Passwort für den postgres-User**!
+```bash
+# Mit psql (in PostgreSQL Shell):
+creatdb webtech_db
 
-2. **Datenbank erstellen**
-   
-   Öffne **pgAdmin 4** (wurde mit PostgreSQL installiert):
-   
-   - Rechtsklick auf **Databases** → **Create** → **Database**
-   - Name: `webtech_db`
-   - Owner: `postgres`
-   - **Save**
+# ODER mit pgAdmin GUI:
+# - Rechtklick auf "Databases" → "Create" → "Database"
+# - Name: webtech_db
+```
 
-   **ODER** über die Kommandozeile:
+### 3️⃣ Backend starten
 
-PostgreSQL SQL Shell (psql) öffnen
-psql -U postgres
-
-Passwort eingeben, dann:
-CREATE DATABASE webtech_db;
-
-Beenden mit:
-\q
-
-#### macOS
-
-PostgreSQL installieren (mit Homebrew)
-brew install postgresql@14
-brew services start postgresql@14
-
-Datenbank erstellen
-createdb webtech_db
-
-
-#### Linux (Ubuntu/Debian)
-
-PostgreSQL installieren
-sudo apt update
-sudo apt install postgresql postgresql-contrib
-
-Datenbank erstellen
-sudo -u postgres createdb webtech_db
-
-### 3. Backend einrichten
-
+```bash
 cd backend
-
-Dependencies installieren
 npm install
 
-Environment-Datei erstellen
+# .env Datei erstellen und ausfüllen:
 cp .env.example .env
 
+# WICHTIG: In .env folgende Zeilen anpassen:
+# DATABASE_URL="postgresql://postgres:DEIN_POSTGRES_PASSWORT@localhost:5432/webtech_db"
+# JWT_SECRET="mindestens-32-zeichen-zufaelliger-string"
+# PORT=3001
+# BASE_URL="http://localhost:3001"
+```
 
-**Bearbeite `.env` und setze deine PostgreSQL-Credentials:**
+**Datenbank Migrations ausführen:**
 
-DATABASE_URL="postgresql://postgres:DEIN_PASSWORT@localhost:5432/webtech_db?schema=public"
-JWT_SECRET="dein-super-geheimer-jwt-secret-key-mindestens-32-zeichen"
-PORT=3001
-BASE_URL="http://localhost:3001"
-
-
-**Ersetze:**
-- `DEIN_PASSWORT` mit deinem PostgreSQL-Passwort
-- `JWT_SECRET` mit einem sicheren, zufälligen String (mind. 32 Zeichen)
-
-**Datenbank-Migrationen ausführen:**
-
+```bash
 npx prisma migrate dev
 npx prisma generate
-
+```
 
 **Backend starten:**
 
+```bash
 npm run dev
+```
 
+✅ **Backend läuft auf http://localhost:3001**
 
-✅ Backend läuft jetzt auf [http://localhost:3001](http://localhost:3001)
+### 4️⃣ Frontend starten
 
-### 4. Frontend einrichten
+In **neuem Terminal**:
 
-Öffne ein **neues Terminal** (Backend läuft weiter!):
-
+```bash
 cd frontend
-
-Dependencies installieren
 npm install
-
-Frontend starten
 npm run dev
+```
 
-✅ Frontend läuft jetzt auf [http://localhost:5173/public/](http://localhost:5173/public/)
-
----
-
-## 🧪 API-Tests
-
-Das Backend enthält vorgefertigte API-Tests mit der REST Client Extension für VSCode.
-
-### REST Client Extension installieren
-
-1. Öffne VSCode
-2. Extensions (Strg+Shift+X)
-3. Suche nach **REST Client** (`humao.rest-client`)
-4. Installieren
-
-### Tests ausführen
-
-Öffne `backend/tests/auth.http` und klicke auf **"Send Request"** über den einzelnen Requests.
+✅ **Frontend läuft auf http://localhost:5173/**
 
 ---
 
-## 📚 Projektdokumentation
+## 🧪 Erste Schritte (MVP Test)
 
-- **[Frontend README](./frontend/README.md)** – Vue 3 Setup und Entwicklung
-- **[Backend README](./backend/README.md)** – API-Dokumentation und Architektur
+### Option 1: Direkt im Browser
+
+1. Öffne [http://localhost:5173/](http://localhost:5173/)
+2. Klicke auf **"Registrieren"**
+3. Trage Test-Daten ein:
+   - Name: `Test User`
+   - E-Mail: `test@example.com`
+   - Passwort: `password123`
+4. Klicke **"Registrieren"**
+5. Du solltest dich jetzt anmelden können!
+6. Klicke auf **"Meine Infoletter"** und erstelle einen neuen Infoletter
+
+### Option 2: Backend API testen (REST Client)
+
+**VSCode Extension installieren:**
+- Extensions: `REST Client` von `humao.rest-client`
+
+**Dann in `backend/tests/auth.http` testen:**
+
+```http
+### Register
+POST http://localhost:3001/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123",
+  "name": "Test User"
+}
+
+### Login
+POST http://localhost:3001/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+```
 
 ---
 
-## 🛠️ Technologie-Stack
+## 🔑 Hauptfunktionen (MVP)
+
+### ✅ Authentifizierung
+- Benutzerregistrierung mit E-Mail-Verifizierung
+- Login mit JWT-Tokens
+- Token-Refresh-Mechanismus
+- Passwort-Reset
+- Audit Logging
+
+### ✅ Infoletter Management
+- ✅ Infoletter erstellen, bearbeiten, löschen
+- ✅ Draft/Published Status
+- ✅ Versionskontrolle (Snapshots)
+- ✅ Bilder hochladen & einbetten
+- ✅ Rich-Text Editor (TipTap ready)
+
+### ✅ Kollaboration
+- ✅ Collaborators hinzufügen/entfernen
+- ✅ Rollen: Owner, Co-Author, Editor, Viewer
+- ✅ Zugriffskontrolle basierend auf Rollen
+
+### 🚧 Nice-to-Have (später)
+- [ ] E-Mail-Versand von Infolettern
+- [ ] Echtzeit-Kollaboration (WebSockets)
+- [ ] Template Library
+- [ ] Analytics & Tracking
+- [ ] Admin-Panel
+
+---
+
+## 📊 Technologie-Stack
 
 ### Frontend
 - **Vue 3** – Progressive JavaScript Framework
 - **TypeScript** – Typsicheres JavaScript
 - **Pinia** – State Management
-- **Vue Router** – Routing
+- **Vue Router** – Client-Side Routing
 - **Vite** – Build Tool
+- **Tailwind CSS** – Utility-First CSS
+- **Axios** – HTTP Client
 
 ### Backend
 - **Node.js + Express** – Server Framework
+- **TypeScript** – Typsicherer Code
 - **Prisma ORM** – Datenbank-Abstraktionsschicht
 - **PostgreSQL** – Relationale Datenbank
 - **JWT** – Authentifizierung
 - **Bcrypt** – Passwort-Hashing
 - **Zod** – Schema-Validierung
-- **Multer + Sharp** – Bildupload und -optimierung
+- **Multer** – File Upload
 
 ---
 
-## 🔑 Hauptfunktionen
+## 🔐 Sicherheit & DSGVO
 
-### Authentifizierung
-- ✅ Benutzerregistrierung mit E-Mail-Verifizierung
-- ✅ Login mit JWT-Tokens
-- ✅ Passwort-Reset-Funktionalität
-- ✅ Token-Refresh-Mechanismus
+✅ **Implementiert:**
+- Password-Hashing mit Bcrypt
+- JWT-basierte Authentifizierung
+- Input-Validierung mit Zod
+- SQL-Injection-Schutz durch Prisma
+- CORS-Konfiguration
+- Audit-Logging aller Operationen
+- Soft-Deletes (14 Tage Retention)
+- Email-Verification vor Login
 
-### Benutzerverwaltung
-- 🚧 Rollen (Admin, User)
-- 🚧 Profilbearbeitung
-- 🚧 Profilbild-Upload
-
-### Infoletter
-- 🚧 Erstellen, Bearbeiten, Löschen
-- 🚧 Draft/Published Status
-- 🚧 Rich Text Editing (TipTap)
-- 🚧 Bildeinbettung
-- 🚧 Kollaboration mit Rollen (Owner, Co-Author, Editor, Viewer)
-- 🚧 Versionskontrolle und Branching
-- 🚧 Pagination, Suche und Filter
-- 🚧 Soft Deletes
-
-### Sicherheit & Monitoring
-- ✅ Audit Logging (CRUD, Login, Logout, etc.)
-- ✅ Input-Validierung
-- ✅ SQL-Injection-Schutz (Prisma)
-- ✅ Password-Hashing (Bcrypt)
-
-✅ = Implementiert | 🚧 = In Entwicklung
-
----
-
-## 👥 Team & Entwicklung
-
-### Git-Workflow
-
-Aktuellen Stand holen
-git pull
-
-Neuen Branch erstellen
-git checkout -b feature/dein-feature
-
-Änderungen committen
-git add .
-git commit -m "feat: Beschreibung der Änderung"
-
-Push zum Remote
-git push origin feature/dein-feature
-
-### VSCode Extensions (empfohlen)
-
-- **Volar** – Vue 3 Support
-- **Prettier** – Code-Formatierung
-- **ESLint** – Linting
-- **Prisma** – Prisma Schema Support
-- **REST Client** – API-Tests
-- **GitLens** – Git-Visualisierung
-- **Thunder Client** – Alternative zu Postman
+🚧 **Zu beachten:**
+- Datenschutzerklärung hinzufügen
+- Cookies-Banner implementieren
+- HTTPS in Production aktivieren
 
 ---
 
 ## 🐛 Troubleshooting
 
-### Backend startet nicht
+### 🔴 Frontend: 404 error bei localhost:5173/
 
-**Problem:** `Error: Cannot find module`
+**Solution:** Router ist jetzt korrekt konfiguriert. Stelle sicher, dass:
+- ✅ `npm install` wurde ausgeführt
+- ✅ `npm run dev` läuft
+- ✅ Es gibt keine Browser-Tabs mit alten Builds
+- ✅ Browser-Cache löschen (`Ctrl+Shift+Del`)
 
+### 🔴 Backend: "Cannot find module"
+
+```bash
 cd backend
 npm install
 npx prisma generate
+```
 
-**Problem:** `Can't reach database server`
-- Überprüfe ob PostgreSQL läuft
-- Überprüfe DATABASE_URL in `.env`
-- Teste Verbindung: `psql -U postgres -d webtech_db`
+### 🔴 Backend: "Can't reach database server"
 
-### Frontend startet nicht
+- PostgreSQL läuft? → `pg_isready -h localhost -p 5432`
+- DATABASE_URL in `.env` korrekt?
+- Datenbank existiert? → `createdb webtech_db`
 
-**Problem:** `EADDRINUSE: Port 5173 already in use`
+### 🔴 Frontend: CORS Error
 
-Anderen Port verwenden
-npm run dev -- --port 5174
+**Backend .env prüfen:**
+```
+BASE_URL=http://localhost:3001
+```
 
-### Prisma-Fehler
+**Frontend .env prüfen:**
+```
+VITE_API_URL=http://localhost:3001/api
+```
 
-**Problem:** `Prisma Client not generated`
+### 🔴 Authentication fehlgeschlagen
 
-Reset und neu migrieren (ACHTUNG: Löscht Daten!)
-npx prisma migrate reset
+- Benutzer registriert? (API Test)
+- E-Mail verifiziert?
+- Token im LocalStorage? (DevTools → Application)
+- Backend-Logs prüfen: `npm run dev` Output
 
 ---
 
 ## 📖 Weitere Ressourcen
 
+- [Frontend README](./frontend/README.md) – Vue 3 Setup und Architektur
+- [Backend README](./backend/README.md) – API-Dokumentation
 - [Vue 3 Dokumentation](https://vuejs.org/)
 - [Prisma Dokumentation](https://www.prisma.io/docs/)
 - [PostgreSQL Dokumentation](https://www.postgresql.org/docs/)
 - [Express Dokumentation](https://expressjs.com/)
+
+---
+
+## 📝 Git Workflow
+
+```bash
+# Aktuellen Stand holen
+git pull origin main
+
+# Neuen Feature-Branch erstellen
+git checkout -b feature/mein-feature
+
+# Änderungen committen
+git add .
+git commit -m "feat: Beschreibung der Änderung"
+
+# Zum Remote pushen
+git push origin feature/mein-feature
+
+# Pull Request auf GitHub erstellen
+```
+
+---
+
+## 👥 Team
+
+- **Frontend Team** – Vue 3 & UI Implementation
+- **Backend Team** – API & Database Implementation
 
 ---
 
@@ -288,4 +327,4 @@ Dieses Projekt ist Teil des Webtech-Kurses 2025.
 
 ---
 
-**Viel Erfolg beim Entwickeln! 🚀**
+**💡 Tip:** Bei Fragen oder Problemen → Check Troubleshooting oder frage im Team-Chat! 🚀
