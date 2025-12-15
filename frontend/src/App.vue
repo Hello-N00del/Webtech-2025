@@ -88,7 +88,6 @@
 <script setup lang="ts">
 import { useAuthStore } from './stores/authStore'
 import { useRouter, useRoute } from 'vue-router'
-import { onMounted, watch } from 'vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -105,37 +104,5 @@ const handleLogout = async () => {
   }
 }
 
-// ✅ FIX: Use nextTick and proper async handling
-onMounted(async () => {
-  console.log('✅ App mounted')
-  console.log('isAuthenticated:', authStore.isAuthenticated)
-  console.log('Current route:', route.path)
-  
-  // Check if we need to redirect after login
-  if (authStore.isAuthenticated && (route.path === '/login' || route.path === '/register')) {
-    console.log('✅ Already authenticated, redirecting to dashboard...')
-    await router.push('/infoletter')
-  }
-})
-
-// ✅ Watch for auth state changes
-watch(
-  () => authStore.isAuthenticated,
-  async (newVal) => {
-    console.log('🔄 Auth state changed to:', newVal)
-    console.log('Current route:', route.path)
-    
-    // If just logged in and on login page, redirect
-    if (newVal && (route.path === '/login' || route.path === '/register')) {
-      console.log('✅ Detected login, redirecting to dashboard...')
-      try {
-        // Use router.replace instead of push (cleaner)
-        await router.replace('/infoletter')
-        console.log('✅ Redirected to dashboard')
-      } catch (err) {
-        console.error('Redirect failed:', err)
-      }
-    }
-  }
-)
+console.log('✅ App.vue loaded')
 </script>
