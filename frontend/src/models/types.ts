@@ -1,4 +1,5 @@
-// frontend/src/models/types.ts
+// Datenmodelle für die Forum-Anwendung
+
 export interface User {
   id: string;
   username: string;
@@ -13,7 +14,12 @@ export interface Infoletter {
   authorId: string;
   createdAt: Date;
   likes: number;
-  category: string;
-  replies: number;
-  views: number;
+  category?: string;
+  replies?: number;
+  views?: number;
+}
+
+export interface LoginCredentials {
+  username: string;
+  password: string;
 }
