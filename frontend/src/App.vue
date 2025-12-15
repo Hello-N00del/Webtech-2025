@@ -30,20 +30,21 @@
                 </p>
               </div>
 
-              <div class="flex items-center gap-4">
+              <div class="flex items-center gap-3">
+                <!-- Navigation Links -->
                 <nav class="flex items-center gap-2">
                   <router-link
                     to="/infoletter"
-                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition"
-                    active-class="bg-white/20"
+                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-white text-indigo-700 hover:bg-slate-100 transition"
+                    active-class="bg-slate-100"
                   >
                     <Home class="size-5" />
                     <span class="hidden md:inline">Dashboard</span>
                   </router-link>
                   <router-link
                     to="/infoletter"
-                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition"
-                    active-class="bg-white/20"
+                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-white text-indigo-700 hover:bg-slate-100 transition"
+                    active-class="bg-slate-100"
                   >
                     <Mail class="size-5" />
                     <span class="hidden md:inline">Meine Infoletter</span>
@@ -53,7 +54,7 @@
                 <!-- Logout Button -->
                 <button
                   @click="handleLogout"
-                  class="px-4 py-2 rounded-lg text-sm font-medium bg-white text-indigo-700 hover:bg-slate-100 transition"
+                  class="px-4 py-2 rounded-lg text-sm font-semibold bg-white text-indigo-700 hover:bg-slate-100 transition"
                 >
                   Abmelden
                 </button>
