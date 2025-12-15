@@ -13,12 +13,23 @@ import type { ApiResponse, RefreshTokenRequest } from '../types/api'
  * Basis-URL für API-Requests
  * Wird über environment variable oder auf Entwicklungs-Default gesetzt
  */
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 
 /**
- * Erstelle Axios-Instanz
+ * Erstelle Axios-Instanz mit Auth
  */
 const api: AxiosInstance = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+
+/**
+ * ✅ Erstelle Public Axios-Instanz OHNE Auth Interceptors
+ * Für öffentliche Endpoints wie /infoletters/public/published
+ */
+const publicApi: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json'
@@ -47,8 +58,8 @@ function subscribeTokenRefresh(callback: (token: string) => void) {
 }
 
 /**
- * REQUEST INTERCEPTOR
- * Füt Authorization Header mit Access Token hinzu
+ * REQUEST INTERCEPTOR (Auth API)
+ * Fügt Authorization Header mit Access Token hinzu
  */
 api.interceptors.request.use(
   (config) => {
@@ -64,7 +75,7 @@ api.interceptors.request.use(
 )
 
 /**
- * RESPONSE INTERCEPTOR
+ * RESPONSE INTERCEPTOR (Auth API)
  * Behandelt 401 Errors und führt Token Refresh durch
  * Verarbeitet Fehler zentralisiert
  */
@@ -110,7 +121,7 @@ api.interceptors.response.use(
         // Speichere neue Tokens
         tokenManager.setTokens(accessToken, newRefreshToken, expiresIn)
 
-        // Informiere andere Requests über neuen Token
+        // Informiere andere Requests über neuen Token
         onRefreshed(accessToken)
 
         // Wiederhohle Original-Request mit neuem Token
@@ -136,10 +147,36 @@ api.interceptors.response.use(
 )
 
 /**
- * HTTP GET Request
+ * ✅ PUBLIC API RESPONSE INTERCEPTOR
+ * Kein Auth-Handling, nur einfaches Daten-Extrahieren
+ */
+publicApi.interceptors.response.use(
+  (response) => {
+    // Success Response - gebe nur data zurück wenn es ein ApiResponse ist
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+      return response.data.data
+    }
+    return response.data
+  },
+  (error) => {
+    // Alle Fehler einfach durchleiten
+    const apiError = handleApiError(error)
+    return Promise.reject(apiError)
+  }
+)
+
+/**
+ * HTTP GET Request (Mit Auth)
  */
 export function getRequest<T = any>(url: string, config?: AxiosRequestConfig) {
   return api.get<T>(url, config)
+}
+
+/**
+ * ✅ HTTP GET Request (Öffentlich - OHNE Auth)
+ */
+export function getPublicRequest<T = any>(url: string, config?: AxiosRequestConfig) {
+  return publicApi.get<T>(url, config)
 }
 
 /**
@@ -171,6 +208,7 @@ export function deleteRequest<T = any>(url: string, config?: AxiosRequestConfig)
 }
 
 /**
- * Exportiere die Axios-Instanz für erweiterte Konfiguration
+ * Exportiere die Axios-Instanzen für erweiterte Konfiguration
  */
 export default api
+export { publicApi }
