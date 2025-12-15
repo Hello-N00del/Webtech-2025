@@ -167,23 +167,42 @@ export const infoletterService = {
 
   /**
    * Bild zu Infoletter hochladen
+   * WICHTIG: FormData wird verwendet, daher wird Content-Type automatisch gesetzt
    */
   async uploadImage(infoletterId: string, file: File): Promise<any> {
     try {
       const formData = new FormData()
       formData.append('image', file)
-      return await postRequest(
+      
+      console.log('Uploading image to /infoletters/' + infoletterId + '/images')
+      
+      // DON'T set Content-Type header - let browser set it with boundary
+      // When sending FormData, axios will automatically set the correct Content-Type
+      const response = await postRequest(
         `/infoletters/${infoletterId}/images`,
-        formData as any,
+        formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data'
+            // Remove Content-Type header - let browser/axios handle it
+            'Content-Type': undefined
           }
         }
       )
-    } catch (error) {
+      
+      console.log('Upload response:', response)
+      
+      if (!response.url && response.filepath) {
+        response.url = response.filepath
+      }
+      
+      return response
+    } catch (error: any) {
       console.error('Error uploading image:', error)
-      throw error
+      // Provide better error message
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error)
+      }
+      throw new Error(error.message || 'Fehler beim Hochladen des Bildes')
     }
   },
 
