@@ -121,12 +121,13 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/authStore'
 
 type Mode = 'login' | 'register'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const mode = ref<Mode>('login')
@@ -144,6 +145,14 @@ const registerForm = ref({
   password: ''
 })
 
+/**
+ * ✅ Helper: Hole Redirect URL oder default
+ */
+const getRedirectUrl = (): string => {
+  const redirect = route.query.redirect as string
+  return redirect && redirect !== '/public' ? redirect : '/infoletter'
+}
+
 const handleLogin = async () => {
   loading.value = true
   error.value = ''
@@ -156,7 +165,11 @@ const handleLogin = async () => {
     }
 
     await authStore.login(email, password)
-    router.push('/dashboard')
+    
+    // ✅ FIX: Nutze redirect query parameter
+    const redirectUrl = getRedirectUrl()
+    console.log('Redirecting to:', redirectUrl)
+    router.push(redirectUrl)
   } catch (err: any) {
     error.value = err.message || 'Anmeldung fehlgeschlagen'
   } finally {
@@ -181,7 +194,11 @@ const handleRegister = async () => {
     }
 
     await authStore.register(email, password, name)
-    router.push('/dashboard')
+    
+    // ✅ FIX: Nutze redirect query parameter
+    const redirectUrl = getRedirectUrl()
+    console.log('Redirecting to:', redirectUrl)
+    router.push(redirectUrl)
   } catch (err: any) {
     error.value = err.message || 'Registrierung fehlgeschlagen'
   } finally {
