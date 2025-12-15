@@ -70,7 +70,7 @@ export const getInfoletter = async (infoletterId: string, userId: string) => {
           },
         },
       },
-      images: true,
+      images: true,  // Include images for gallery
       versions: { orderBy: { versionNumber: 'desc' } },
     },
   });
@@ -110,6 +110,7 @@ export const createInfoletter = async (
         select: { id: true, name: true, email: true, profileImageUrl: true },
       },
       collaborators: true,
+      images: true,
     },
   });
 
@@ -195,6 +196,7 @@ export const updateInfoletter = async (
           },
         },
       },
+      images: true,  // Include images
       versions: { orderBy: { versionNumber: 'desc' }, take: 1 },
     },
   });
