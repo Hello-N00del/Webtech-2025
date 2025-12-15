@@ -1,14 +1,14 @@
-import { defineStore } from "pinia"
-import { useAuthStore } from "./authStore"
+<script setup lang="ts">
+import { ref } from "vue"
+import { useAppStore } from "../stores/AppStore"
 
-export const useAppStore = defineStore("app", () => {
-  const auth = useAuthStore()
+const appStore = useAppStore()
+const auth = appStore.auth
 
-  return {
-    // Auth-Store durchreichen
-    auth,
+const email = ref("")
+const password = ref("")
 
-    // Falls du später noch globale Sachen brauchst (z.B. UI-Settings),
-    // kannst du sie hier ergänzen.
-  }
-})
+const handleLogin = async () => {
+  await auth.login(email.value, password.value)
+}
+</script>
