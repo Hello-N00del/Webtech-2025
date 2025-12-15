@@ -1,26 +1,28 @@
-import { Router } from 'express';
-import * as infoletterController from '../controllers/infoletterController.js';
-import { authenticate } from '../middleware/auth.js';
-import { upload } from '../config/multer.js';
+import { Router } from 'express'
+import * as infoletterController from '../controllers/infoletterController.js'
+import { authenticate } from '../middleware/auth.js'
+import { upload } from '../config/multer.js'
 
-const router = Router();
+const router = Router()
 
 // All routes require authentication
-router.use(authenticate);
+router.use(authenticate)
+
+// Image deletion MUST come before /:id routes (specificity)
+router.delete('/images/:imageId', infoletterController.deleteImage)
 
 // Infoletter CRUD
-router.get('/', infoletterController.getInfoletters);
-router.post('/', infoletterController.createInfoletter);
-router.get('/:id', infoletterController.getInfoletter);
-router.put('/:id', infoletterController.updateInfoletter);
-router.delete('/:id', infoletterController.deleteInfoletter);
+router.get('/', infoletterController.getInfoletters)
+router.post('/', infoletterController.createInfoletter)
+router.get('/:id', infoletterController.getInfoletter)
+router.put('/:id', infoletterController.updateInfoletter)
+router.delete('/:id', infoletterController.deleteInfoletter)
 
 // Collaborators
-router.post('/:infoletterId/collaborators', infoletterController.addCollaborator);
-router.delete('/:infoletterId/collaborators/:userId', infoletterController.removeCollaborator);
+router.post('/:infoletterId/collaborators', infoletterController.addCollaborator)
+router.delete('/:infoletterId/collaborators/:userId', infoletterController.removeCollaborator)
 
 // Images
-router.post('/:infoletterId/images', upload.single('image'), infoletterController.uploadImage);
-router.delete('/images/:imageId', infoletterController.deleteImage);
+router.post('/:infoletterId/images', upload.single('image'), infoletterController.uploadImage)
 
-export default router;
+export default router
