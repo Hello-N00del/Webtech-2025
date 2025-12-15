@@ -1,129 +1,270 @@
 <template>
-  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-      <div
-        class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl"
-      >
-        <h2 class="text-gray-900">Neuer Thread</h2>
-        <button
-          type="button"
-          @click="emit('close')"
-          class="text-gray-400 hover:text-gray-600 transition p-1 hover:bg-gray-100 rounded-lg"
-        >
-          <X class="size-6" />
-        </button>
+  <div class="space-y-6">
+    <!-- Header -->
+    <div>
+      <h2 class="text-3xl font-bold text-slate-900 mb-2">
+        {{ isEditing ? 'Infoletter bearbeiten' : 'Neuer Infoletter' }}
+      </h2>
+      <p class="text-slate-600">
+        {{ isEditing ? 'Aktualisiere deinen Newsletter' : 'Erstelle einen neuen Newsletter' }}
+      </p>
+    </div>
+
+    <!-- Form -->
+    <form @submit.prevent="handleSubmit" class="space-y-6 bg-white rounded-lg shadow-lg p-8">
+      <!-- Title Field -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-900 mb-2">
+          Titel *
+        </label>
+        <input
+          v-model="form.title"
+          type="text"
+          placeholder="z.B. Newsletter März 2025"
+          class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          required
+        />
+        <p v-if="errors.title" class="text-red-600 text-sm mt-1">{{ errors.title }}</p>
       </div>
 
-      <form @submit.prevent="handleSubmit" class="p-6">
-        <div class="space-y-6">
-          <div>
-            <label for="category" class="block text-gray-700 mb-2">
-              Kategorie
-            </label>
-            <select
-              id="category"
-              v-model="category"
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-            >
-              <option value="Allgemein">Allgemein</option>
-              <option value="Wichtig">Wichtig</option>
-              <option value="Neuigkeiten">Neuigkeiten</option>
-              <option value="Werbung">Werbung</option>
-            </select>
-          </div>
+      <!-- Content Field -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-900 mb-2">
+          Inhalt *
+        </label>
+        <textarea
+          v-model="form.content"
+          placeholder="Schreibe deinen Newsletter-Inhalt hier..."
+          rows="10"
+          class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm"
+          required
+        ></textarea>
+        <p v-if="errors.content" class="text-red-600 text-sm mt-1">{{ errors.content }}</p>
+      </div>
 
-          <div>
-            <label for="title" class="block text-gray-700 mb-2">
-              Titel
-            </label>
+      <!-- Status Field -->
+      <div>
+        <label class="block text-sm font-semibold text-slate-900 mb-2">
+          Status
+        </label>
+        <div class="flex gap-4">
+          <label class="flex items-center gap-2 cursor-pointer">
             <input
-              id="title"
-              type="text"
-              v-model="title"
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-              placeholder="Gib einen Titel ein"
-              required
+              v-model="form.status"
+              type="radio"
+              value="DRAFT"
+              class="w-4 h-4"
             />
-          </div>
-
-          <div>
-            <label for="content" class="block text-gray-700 mb-2">
-              Inhalt
-            </label>
-            <textarea
-              id="content"
-              v-model="content"
-              rows="10"
-              class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition resize-none"
-              placeholder="Schreibe deinen Thread..."
-              required
+            <span class="text-slate-700">Entwurf</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input
+              v-model="form.status"
+              type="radio"
+              value="PUBLISHED"
+              class="w-4 h-4"
             />
-          </div>
+            <span class="text-slate-700">Veröffentlicht</span>
+          </label>
+        </div>
+      </div>
 
-          <div
-            v-if="error"
-            class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl"
-          >
-            {{ error }}
-          </div>
+      <!-- Error Message -->
+      <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
+        {{ error }}
+      </div>
 
-          <div class="flex gap-3 justify-end pt-4 border-t border-gray-100">
-            <button
-              type="button"
-              @click="emit('close')"
-              class="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition"
+      <!-- Action Buttons -->
+      <div class="flex gap-4 pt-4 border-t border-slate-200">
+        <button
+          type="submit"
+          :disabled="loading"
+          class="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          <span v-if="loading" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+          {{ loading ? 'Wird gespeichert...' : (isEditing ? 'Änderungen speichern' : 'Infoletter erstellen') }}
+        </button>
+        <router-link
+          to="/infoletter"
+          class="px-6 py-3 bg-slate-200 text-slate-900 rounded-lg font-semibold hover:bg-slate-300 transition text-center"
+        >
+          Abbrechen
+        </router-link>
+      </div>
+    </form>
+
+    <!-- Collaborators Section (Edit only) -->
+    <div v-if="isEditing" class="bg-white rounded-lg shadow-lg p-8 space-y-6">
+      <div>
+        <h3 class="text-xl font-bold text-slate-900 mb-4">Mitarbeiter</h3>
+        <div class="space-y-4">
+          <!-- Collaborator List -->
+          <div v-if="collaborators.length > 0" class="space-y-2">
+            <div
+              v-for="collab in collaborators"
+              :key="collab.userId"
+              class="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
             >
-              Abbrechen
-            </button>
-            <button
-              type="submit"
-              :disabled="isSubmitting"
-              class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg"
-            >
-              <Send class="size-4" />
-              {{ isSubmitting ? "Wird veröffentlicht..." : "Veröffentlichen" }}
-            </button>
+              <div>
+                <p class="font-medium text-slate-900">{{ collab.user.name }}</p>
+                <p class="text-sm text-slate-600">{{ collab.user.email }}</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="text-xs font-semibold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">
+                  {{ collab.role }}
+                </span>
+                <button
+                  @click="removeCollaborator(collab.userId)"
+                  class="text-red-600 hover:text-red-700 transition"
+                  type="button"
+                >
+                  Entfernen
+                </button>
+              </div>
+            </div>
+          </div>
+          <p v-else class="text-slate-600">Keine Mitarbeiter hinzugefügt</p>
+
+          <!-- Add Collaborator Form -->
+          <div class="border-t pt-4 mt-4">
+            <h4 class="font-semibold text-slate-900 mb-3">Mitarbeiter hinzufügen</h4>
+            <div class="flex gap-2">
+              <input
+                v-model="newCollaborator.email"
+                type="email"
+                placeholder="Email des Mitarbeiters"
+                class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <select
+                v-model="newCollaborator.role"
+                class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="EDITOR">Editor</option>
+                <option value="VIEWER">Betrachter</option>
+              </select>
+              <button
+                @click="addCollaborator"
+                type="button"
+                :disabled="!newCollaborator.email"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+              >
+                Hinzufügen
+              </button>
+            </div>
           </div>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, defineEmits } from "vue"
-import { useAppStore } from "../stores/AppStore" // ggf. in Thread-Store umbenennen
-import { Send, X } from "lucide-vue-next"
+import { ref, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { infoletterService } from '../services/infoletterService'
 
-const emit = defineEmits<{
-  (e: "close"): void
-}>()
+const router = useRouter()
+const route = useRoute()
 
-const store = useAppStore()
+const isEditing = computed(() => !!route.params.id)
 
-const title = ref("")
-const content = ref("")
-const category = ref("Allgemein")
-const error = ref("")
-const isSubmitting = ref(false)
+const form = ref({
+  title: '',
+  content: '',
+  status: 'DRAFT' as 'DRAFT' | 'PUBLISHED'
+})
 
-const handleSubmit = () => {
-  error.value = ""
+const errors = ref<Record<string, string>>({})
+const loading = ref(false)
+const error = ref('')
+const collaborators = ref<any[]>([])
+const newCollaborator = ref({
+  email: '',
+  role: 'EDITOR'
+})
 
-  if (!title.value.trim() || !content.value.trim()) {
-    error.value = "Bitte fülle alle Felder aus."
-    return
+const loadInfoletter = async () => {
+  if (!isEditing.value || !route.params.id) return
+
+  try {
+    const infoletter = await infoletterService.getById(route.params.id as string)
+    form.value = {
+      title: infoletter.title,
+      content: infoletter.content,
+      status: infoletter.status
+    }
+    collaborators.value = infoletter.collaborators || []
+  } catch (err: any) {
+    error.value = 'Fehler beim Laden des Infoletters'
+    console.error('Error loading infoletter:', err)
   }
-
-  isSubmitting.value = true
-
-  setTimeout(() => {
-    store.addThread(title.value, content.value, category.value)
-    isSubmitting.value = false
-    title.value = ""
-    content.value = ""
-    category.value = "Allgemein"
-    emit("close")
-  }, 300)
 }
+
+const handleSubmit = async () => {
+  errors.value = {}
+  error.value = ''
+  loading.value = true
+
+  try {
+    // Validation
+    if (!form.value.title.trim()) {
+      errors.value.title = 'Titel ist erforderlich'
+    }
+    if (!form.value.content.trim()) {
+      errors.value.content = 'Inhalt ist erforderlich'
+    }
+
+    if (Object.keys(errors.value).length > 0) {
+      loading.value = false
+      return
+    }
+
+    if (isEditing.value && route.params.id) {
+      // Update
+      await infoletterService.update(route.params.id as string, form.value)
+    } else {
+      // Create
+      await infoletterService.create(form.value)
+    }
+
+    router.push('/infoletter')
+  } catch (err: any) {
+    error.value = err.message || 'Fehler beim Speichern'
+    console.error('Error saving infoletter:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+const addCollaborator = async () => {
+  if (!newCollaborator.value.email || !isEditing.value || !route.params.id) return
+
+  try {
+    // Note: Backend expects userId, not email. This is a simplified version.
+    // In production, you'd need to look up the user ID from email first
+    // await infoletterService.addCollaborator(
+    //   route.params.id as string,
+    //   userId,
+    //   newCollaborator.value.role
+    // )
+    console.warn('Collaborator feature requires user lookup - not fully implemented')
+  } catch (err: any) {
+    error.value = err.message || 'Fehler beim Hinzufügen des Mitarbeiters'
+  }
+}
+
+const removeCollaborator = async (userId: string) => {
+  if (!isEditing.value || !route.params.id) return
+
+  try {
+    await infoletterService.removeCollaborator(route.params.id as string, userId)
+    collaborators.value = collaborators.value.filter(c => c.userId !== userId)
+  } catch (err: any) {
+    error.value = err.message || 'Fehler beim Entfernen des Mitarbeiters'
+  }
+}
+
+onMounted(() => {
+  loadInfoletter()
+})
 </script>
