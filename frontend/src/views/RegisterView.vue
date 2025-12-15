@@ -29,6 +29,7 @@
               placeholder="Max Mustermann"
               class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               required
+              minlength="2"
             />
           </div>
 
@@ -54,11 +55,12 @@
             <input
               v-model="form.password"
               type="password"
-              placeholder="Mindestens 6 Zeichen"
+              placeholder="Mindestens 8 Zeichen"
               class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               required
-              minlength="6"
+              minlength="8"
             />
+            <p class="text-xs text-slate-500 mt-1">Mindestens 8 Zeichen</p>
           </div>
 
           <!-- Confirm Password Field -->
@@ -72,7 +74,7 @@
               placeholder="Passwort wiederholen"
               class="w-full rounded-lg border border-slate-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               required
-              minlength="6"
+              minlength="8"
             />
           </div>
 
@@ -136,8 +138,13 @@ const handleRegister = async () => {
     return
   }
 
-  if (form.value.password.length < 6) {
-    error.value = 'Passwort muss mindestens 6 Zeichen lang sein'
+  if (form.value.password.length < 8) {
+    error.value = 'Passwort muss mindestens 8 Zeichen lang sein'
+    return
+  }
+
+  if (form.value.name.length < 2) {
+    error.value = 'Name muss mindestens 2 Zeichen lang sein'
     return
   }
 
@@ -152,7 +159,7 @@ const handleRegister = async () => {
     // Nach erfolgreicher Registrierung zur Infoletter-Liste
     router.push('/infoletter')
   } catch (err: any) {
-    error.value = err.message || 'Registrierung fehlgeschlagen'
+    error.value = err.message || authStore.error || 'Registrierung fehlgeschlagen'
     console.error('Registration failed:', err)
   } finally {
     loading.value = false
