@@ -5,8 +5,10 @@ import { upload } from '../config/multer.js'
 
 const router = Router()
 
-// ✅ PUBLIC route - no authentication required
+// ✅ PUBLIC routes - no authentication required
 router.get('/public/published', infoletterController.getPublishedInfolitters)
+// ✅ MUST come AFTER /published to avoid route conflicts
+router.get('/public/:id', infoletterController.getPublishedInfoletter)
 
 // All other routes require authentication
 router.use(authenticate)
