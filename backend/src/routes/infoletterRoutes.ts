@@ -5,7 +5,10 @@ import { upload } from '../config/multer.js'
 
 const router = Router()
 
-// All routes require authentication
+// ✅ PUBLIC route - no authentication required
+router.get('/public/published', infoletterController.getPublishedInfolitters)
+
+// All other routes require authentication
 router.use(authenticate)
 
 // Image deletion MUST come before /:id routes (specificity)
