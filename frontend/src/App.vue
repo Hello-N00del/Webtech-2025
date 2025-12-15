@@ -10,8 +10,14 @@
 
     <!-- Router Content -->
     <template v-else>
-      <!-- Authenticated User Layout -->
-      <template v-if="authStore.isAuthenticated">
+      <!-- Check if current route is a public page (landing, login, register) -->
+      <template v-if="isPublicRoute">
+        <!-- Full screen router view for public pages (no header/footer) -->
+        <router-view />
+      </template>
+
+      <!-- Authenticated User Layout (with header) -->
+      <template v-else-if="authStore.isAuthenticated">
         <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
           <div class="max-w-7xl mx-auto px-4 md:px-6 py-4">
             <div class="flex items-center justify-between">
@@ -66,9 +72,16 @@
         </main>
       </template>
 
-      <!-- Unauthenticated Layout (Login/Register) -->
+      <!-- Fallback: Redirect to login if not authenticated and not public route -->
       <template v-else>
-        <router-view />
+        <div class="min-h-screen flex items-center justify-center">
+          <div class="text-center">
+            <p class="text-slate-600 mb-4">Leiterschaft wird umgeleitet...</p>
+            <router-link to="/login" class="text-indigo-600 hover:text-indigo-700 font-medium">
+              Oder hier klicken zum Anmelden
+            </router-link>
+          </div>
+        </div>
       </template>
     </template>
   </div>
@@ -76,17 +89,24 @@
 
 <script setup lang="ts">
 import { useAuthStore } from './stores/authStore'
+import { useRouter, useRoute } from 'vue-router'
+import { computed, onMounted, watch } from 'vue'
 import { Home, Mail } from 'lucide-vue-next'
-import { useRouter } from 'vue-router'
-import { onMounted, watch } from 'vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
+
+// Check if current route is public (no auth required)
+const isPublicRoute = computed(() => {
+  const publicRoutes = ['/', '/login', '/register', '/public']
+  return publicRoutes.includes(route.path)
+})
 
 const handleLogout = async () => {
   try {
     await authStore.logout()
-    router.push('/login')
+    router.push('/')
   } catch (error) {
     console.error('Logout failed:', error)
   }
