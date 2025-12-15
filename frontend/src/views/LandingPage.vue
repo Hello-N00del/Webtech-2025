@@ -262,15 +262,25 @@ const getImageUrl = (image: any): string => {
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
   const backendUrl = apiUrl.replace('/api', '')
   
-  if (image.url) {
-    return image.url.startsWith('http') ? image.url : `${backendUrl}${image.url}`
+  // Use filepath or url - they contain the path starting with /
+  let imagePath = image.filepath || image.url || image.filename
+  
+  // Make sure it starts with /
+  if (!imagePath.startsWith('/')) {
+    imagePath = '/' + imagePath
   }
   
-  if (image.filepath) {
-    return image.filepath.startsWith('http') ? image.filepath : `${backendUrl}${image.filepath}`
+  // Construct full URL
+  let fullUrl: string
+  if (imagePath.startsWith('/uploads')) {
+    fullUrl = `${backendUrl}${imagePath}`
+  } else if (imagePath.startsWith('/infoletter-images')) {
+    fullUrl = `${backendUrl}/uploads${imagePath}`
+  } else {
+    fullUrl = `${backendUrl}/uploads/infoletter-images/${imagePath}`
   }
   
-  return `${backendUrl}/uploads/infoletter-images/${image.filename}`
+  return fullUrl
 }
 
 const stripHtml = (html: string): string => {
