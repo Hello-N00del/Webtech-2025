@@ -11,16 +11,20 @@ import prisma from '../config/database.js';
 export const register = async (req: Request, res: Response) => {
   try {
     const { email, password, name } = registerSchema.parse(req.body);
-    const user = await authService.registerUser(
+    const result = await authService.registerUser(
       email,
       password,
       name,
       req.ip,
       req.get('user-agent')
     );
+    // ✅ Zurück gleiche Response wie Login
     res.status(201).json({
-      message: 'Registration successful. Please check your email to verify your account.',
-      user,
+      user: result.user,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      expiresIn: result.expiresIn,
+      message: 'Registration successful.'
     });
   } catch (err: any) {
     res.status(400).json({ error: err.message || 'Registration failed' });
