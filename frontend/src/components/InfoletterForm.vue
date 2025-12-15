@@ -70,7 +70,7 @@
                   <img
                     :src="getImageUrl(image)"
                     :alt="image.filename"
-                    @error="handleImageError(image.id)"
+                    @error="handleImageError(image)"
                     class="w-full h-24 object-cover rounded-lg border border-slate-200"
                   />
                   <button
@@ -432,13 +432,48 @@ const uploadImage = async () => {
   }
 }
 
+/**
+ * ✅ FIXED: Generate absolute URLs for images
+ * Images are served by backend at http://localhost:3000/uploads/...
+ * But frontend runs on http://localhost:5173
+ * So we need absolute URLs pointing to backend
+ */
 const getImageUrl = (image: any): string => {
-  // Try different possible URL fields
-  return image.url || image.filepath || `/uploads/infoletter-images/${image.filename}`
+  // Get backend URL from environment variable or use default
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+  const backendUrl = apiUrl.replace('/api', '') // Remove /api suffix to get base URL
+  
+  console.log('🖼️ Generating image URL for:', image)
+  console.log('Backend URL:', backendUrl)
+  
+  // Check if image.url exists and is absolute
+  if (image.url) {
+    const finalUrl = image.url.startsWith('http') 
+      ? image.url 
+      : `${backendUrl}${image.url}`
+    console.log('Using image.url:', finalUrl)
+    return finalUrl
+  }
+  
+  // Check if image.filepath exists and is absolute
+  if (image.filepath) {
+    const finalUrl = image.filepath.startsWith('http')
+      ? image.filepath
+      : `${backendUrl}${image.filepath}`
+    console.log('Using image.filepath:', finalUrl)
+    return finalUrl
+  }
+  
+  // Fallback: construct URL from filename
+  const fallbackUrl = `${backendUrl}/uploads/infoletter-images/${image.filename}`
+  console.log('Using fallback URL:', fallbackUrl)
+  return fallbackUrl
 }
 
-const handleImageError = (imageId: string) => {
-  failedImages.value.add(imageId)
+const handleImageError = (image: any) => {
+  console.error('❌ Failed to load image:', image)
+  console.error('Tried URL:', getImageUrl(image))
+  failedImages.value.add(image.id)
 }
 
 const removeImage = async (imageId: string) => {
