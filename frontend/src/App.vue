@@ -27,7 +27,7 @@
               <div class="flex items-center gap-4">
                 <nav class="flex items-center gap-2">
                   <router-link
-                    to="/dashboard"
+                    to="/infoletter"
                     class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/10 transition"
                     active-class="bg-white/20"
                   >
@@ -75,17 +75,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue"
-import { useAuthStore } from "./stores/authStore" // Pfad ggf. anpassen
-import HelloWorld from "./components/HelloWorld.vue"
-import Dashboard from "./components/Dashboard.vue"
-import InfoletterFeed from "./components/InfoletterFeed.vue"
-import InfoletterForm from "./components/InfoletterForm.vue"
-import { Home, MessageSquare } from "lucide-vue-next"
+import { useAuthStore } from './stores/authStore'
+import { Home, Mail } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 
-type View = "dashboard" | "forum"
+const authStore = useAuthStore()
+const router = useRouter()
 
-const store = useAuthStore()
-const currentView = ref<View>("dashboard")
-const showNewThread = ref(false)
+const handleLogout = async () => {
+  try {
+    await authStore.logout()
+    router.push('/login')
+  } catch (error) {
+    console.error('Logout failed:', error)
+  }
+}
 </script>
