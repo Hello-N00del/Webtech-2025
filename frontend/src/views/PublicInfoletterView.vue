@@ -70,10 +70,6 @@
                 :key="image.id"
                 class="rounded-lg overflow-hidden shadow-md hover:shadow-lg transition"
               >
-                <!-- Debug Info -->
-                <div class="text-xs text-slate-500 p-2 bg-slate-100">
-                  {{ getImageUrl(image) }}
-                </div>
                 <img
                   :src="getImageUrl(image)"
                   :alt="image.filename"
@@ -211,9 +207,10 @@ const loadInfoletter = async () => {
       return
     }
 
-    console.log('📄 Loading infoletter:', id)
-    const data = await infoletterService.getById(id)
-    console.log('📄 Loaded data:', data)
+    console.log('📄 Loading PUBLIC infoletter:', id)
+    // ✅ Use getPublishedById for public view (NO AUTH)
+    const data = await infoletterService.getPublishedById(id)
+    console.log('📄 Loaded public infoletter:', data)
     
     infoletter.value = data as Infoletter
   } catch (err: any) {
@@ -224,39 +221,39 @@ const loadInfoletter = async () => {
   }
 }
 
-// ✅ FIXED: Proper image URL handling
+// ✅ FIXED: Proper image URL construction
 const getImageUrl = (image: any): string => {
   // Use .env variable for API URL
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
   const backendUrl = apiUrl.replace('/api', '')  // Remove /api to get base URL
   
   console.log('🖼️ Image URL Debug:')
+  console.log('  VITE_API_URL:', import.meta.env.VITE_API_URL)
   console.log('  apiUrl:', apiUrl)
   console.log('  backendUrl:', backendUrl)
   console.log('  image.filepath:', image.filepath)
   console.log('  image.url:', image.url)
   
-  // Prefer filepath or url - they should already include the path
-  if (image.filepath && image.filepath.startsWith('/')) {
-    const finalUrl = `${backendUrl}${image.filepath}`
-    console.log('  final URL:', finalUrl)
-    return finalUrl
+  // Use filepath or url - they contain the path starting with /
+  let imagePath = image.filepath || image.url || image.filename
+  
+  // Make sure it starts with /
+  if (!imagePath.startsWith('/')) {
+    imagePath = '/' + imagePath
   }
   
-  if (image.url && image.url.startsWith('/')) {
-    const finalUrl = `${backendUrl}${image.url}`
-    console.log('  final URL:', finalUrl)
-    return finalUrl
+  // Construct full URL
+  let fullUrl: string
+  if (imagePath.startsWith('/uploads')) {
+    fullUrl = `${backendUrl}${imagePath}`
+  } else if (imagePath.startsWith('/infoletter-images')) {
+    fullUrl = `${backendUrl}/uploads${imagePath}`
+  } else {
+    fullUrl = `${backendUrl}/uploads/infoletter-images/${imagePath}`
   }
   
-  // If both are absolute URLs, use as-is
-  if (image.filepath?.startsWith('http')) return image.filepath
-  if (image.url?.startsWith('http')) return image.url
-  
-  // Fallback
-  const fallbackUrl = `${backendUrl}/uploads/infoletter-images/${image.filename}`
-  console.log('  fallback URL:', fallbackUrl)
-  return fallbackUrl
+  console.log('  final URL:', fullUrl)
+  return fullUrl
 }
 
 const handleImageError = (event: Event, image: any) => {
