@@ -33,6 +33,7 @@ export const getInfoletter = async (req: Request, res: Response) => {
     if (err.message === 'Access denied') {
       return res.status(403).json({ error: 'Access denied' });
     }
+    console.error('Error fetching infoletter:', err);
     res.status(400).json({ error: err.message || 'Failed to fetch infoletter' });
   }
 };
@@ -184,10 +185,16 @@ export const uploadImage = async (req: Request, res: Response) => {
     }
 
     const { infoletterId } = req.params;
-    const { filename, mimetype, size, path: filePath } = req.file;
+    const { filename, mimetype, size } = req.file;
 
+    console.log('Upload details:', { filename, mimetype, size, path: req.file.path });
+
+    // Extract just the filename from the path (Multer already saved it with UUID name)
+    const savedFilename = path.basename(req.file.path);
     // Store relative path for database
-    const relativePath = `/uploads/infoletter-images/${path.basename(filePath)}`;
+    const relativePath = `/uploads/infoletter-images/${savedFilename}`;
+
+    console.log('Storing image with path:', relativePath);
 
     const image = await infoletterService.addImage(
       infoletterId,
@@ -206,6 +213,7 @@ export const uploadImage = async (req: Request, res: Response) => {
     // Clean up uploaded file if error occurs
     if (req.file?.path) {
       try {
+        console.log('Cleaning up file:', req.file.path);
         await fs.unlink(req.file.path);
       } catch (e) {
         console.error('Error deleting uploaded file:', e);
@@ -238,8 +246,11 @@ export const deleteImage = async (req: Request, res: Response) => {
     // Try to delete file from disk
     if (image.filepath) {
       try {
-        const filePath = process.cwd() + '/public' + image.filepath;
-        await fs.unlink(filePath);
+        // The filepath is relative (e.g., /uploads/infoletter-images/uuid.png)
+        // We need to construct the full path
+        const fullPath = path.join(process.cwd(), 'public', image.filepath);
+        console.log('Deleting image file:', fullPath);
+        await fs.unlink(fullPath);
       } catch (e) {
         console.warn('Could not delete file from disk:', e);
       }
