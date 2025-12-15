@@ -12,6 +12,7 @@ import { useRouterGuards } from '../composables/useRouterGuards'
 import HelloWorld from '../components/HelloWorld.vue'
 import InfoletterFeed from '../components/InfoletterFeed.vue'
 import InfoletterForm from '../components/InfoletterForm.vue'
+import LoginView from '../views/LoginView.vue'
 
 /**
  * Route Definitions
@@ -75,8 +76,15 @@ const routes: Array<RouteRecordRaw> = [
       requiresAuth: true,
       layout: "default"
     } as CustomRouteMeta
+  },
+  {
+    path: '/dashboard',
+    redirect: '/infoletter',
+    meta: {
+      title: 'Dashboard',
+      requiresAuth: true
+    } as CustomRouteMeta
   }
-  // TODO: Login Page hinzufügen
   // TODO: Register Page hinzufügen
   // TODO: 404 Not Found Page hinzufügen
 ]
