@@ -71,6 +71,79 @@
       </div>
     </div>
 
+    <!-- ✅ Featured Infoletters Section -->
+    <div class="bg-white/5 backdrop-blur-md border-t border-white/10 py-20 px-4">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-4xl font-bold text-white text-center mb-4">📰 Aktuelle Newsletter</h2>
+        <p class="text-center text-white/70 mb-16">Schaue dir beispiele von veröffentlichten Newslettern an</p>
+
+        <!-- Loading State -->
+        <div v-if="loadingInfoletters" class="flex justify-center items-center h-64">
+          <div class="text-center">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+            <p class="mt-4 text-white">Newsletter werden geladen...</p>
+          </div>
+        </div>
+
+        <!-- Infoletters Grid -->
+        <div v-else-if="publishedInfolettters.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <router-link
+            v-for="infoletter in publishedInfolettters.slice(0, 6)"
+            :key="infoletter.id"
+            :to="`/infoletter/${infoletter.id}/view`"
+            class="group bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 hover:border-white/40 hover:bg-white/20 transition transform hover:scale-105"
+          >
+            <!-- Header -->
+            <div class="mb-4">
+              <h3 class="text-xl font-bold text-white line-clamp-2 group-hover:line-clamp-none">{{ infoletter.title }}</h3>
+              <p class="text-sm text-white/60 mt-1">{{ formatDate(infoletter.publishedAt) }}</p>
+            </div>
+
+            <!-- Author Info -->
+            <div class="flex items-center gap-3 mb-4 pb-4 border-b border-white/10">
+              <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                {{ infoletter.owner.name?.charAt(0).toUpperCase() }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-white truncate">{{ infoletter.owner.name }}</p>
+                <p class="text-xs text-white/60 truncate">{{ infoletter.owner.email }}</p>
+              </div>
+            </div>
+
+            <!-- Preview -->
+            <p class="text-white/70 text-sm line-clamp-2">{{ stripHtml(infoletter.content) }}</p>
+
+            <!-- Images Preview -->
+            <div v-if="infoletter.images && infoletter.images.length > 0" class="mt-4 pt-4 border-t border-white/10">
+              <div class="grid grid-cols-3 gap-2">
+                <img
+                  v-for="(image, idx) in infoletter.images.slice(0, 3)"
+                  :key="image.id"
+                  :src="getImageUrl(image)"
+                  :alt="image.filename"
+                  class="w-full h-16 object-cover rounded group-hover:opacity-75 transition"
+                />
+              </div>
+              <p v-if="infoletter.images.length > 3" class="text-xs text-white/60 mt-2">
+                +{{ infoletter.images.length - 3 }} weitere Bilder
+              </p>
+            </div>
+
+            <!-- CTA -->
+            <div class="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-white/80 group-hover:text-white transition">
+              <span class="text-sm font-medium">Ansehen</span>
+              <span>→</span>
+            </div>
+          </router-link>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else class="text-center text-white/70">
+          <p class="text-lg">Noch keine Newsletter veröffentlicht. Registriere dich, um einen zu erstellen!</p>
+        </div>
+      </div>
+    </div>
+
     <!-- How it works Section -->
     <div class="bg-white/5 backdrop-blur-md border-t border-white/10 py-20 px-4">
       <div class="max-w-6xl mx-auto">
@@ -148,5 +221,74 @@
 </template>
 
 <script setup lang="ts">
-// No script needed - simple landing page
+import { ref, onMounted } from 'vue'
+import { infoletterService } from '../services/infoletterService'
+
+interface Infoletter {
+  id: string
+  title: string
+  content: string
+  publishedAt: string
+  owner: {
+    id: string
+    name: string
+    email: string
+  }
+  images?: Array<{
+    id: string
+    filename: string
+    filepath: string
+    url?: string
+  }>
+}
+
+const publishedInfolettters = ref<Infoletter[]>([])
+const loadingInfoletters = ref(false)
+
+const loadPublishedInfolettters = async () => {
+  loadingInfoletters.value = true
+  try {
+    const data = await infoletterService.getPublished()
+    publishedInfolettters.value = data as Infoletter[]
+    console.log('📰 Loaded published infoletters:', data)
+  } catch (err: any) {
+    console.error('Error loading published infoletters:', err)
+  } finally {
+    loadingInfoletters.value = false
+  }
+}
+
+const getImageUrl = (image: any): string => {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+  const backendUrl = apiUrl.replace('/api', '')
+  
+  if (image.url) {
+    return image.url.startsWith('http') ? image.url : `${backendUrl}${image.url}`
+  }
+  
+  if (image.filepath) {
+    return image.filepath.startsWith('http') ? image.filepath : `${backendUrl}${image.filepath}`
+  }
+  
+  return `${backendUrl}/uploads/infoletter-images/${image.filename}`
+}
+
+const stripHtml = (html: string): string => {
+  const tmp = document.createElement('DIV')
+  tmp.innerHTML = html
+  return (tmp.textContent || tmp.innerText || '').substring(0, 100) + '...'
+}
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('de-DE', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+onMounted(() => {
+  loadPublishedInfolettters()
+})
 </script>
