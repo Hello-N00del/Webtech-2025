@@ -48,11 +48,13 @@
 import { ref } from "vue"
 import { useAppStore } from "../stores/AppStore"
 
-const store = useAppStore()
+const appStore = useAppStore()
+const auth = appStore.auth
+
 const username = ref("")
 const password = ref("")
 
 const handleLogin = async () => {
-  await store.login(username.value, password.value)
+  await auth.login(username.value, password.value)
 }
 </script>
