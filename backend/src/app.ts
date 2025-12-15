@@ -1,29 +1,48 @@
 import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/authRoutes.js';
+import infoletterRoutes from './routes/infoletterRoutes.js';
 
 console.log('🔄 Loading app.ts...');
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// CORS Configuration
+const corsOptions = {
+  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:4173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 3600,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Log requests
+app.use((req, res, next) => {
+  console.log(`📨 ${req.method} ${req.path}`);
+  next();
+});
 
 console.log('✅ Middleware loaded');
 
 // Test Route
 app.get('/api/test', (req, res) => {
   console.log('✅ Test route hit!');
-  res.json({ message: 'Server works!' });
+  res.json({ message: 'Server works!', timestamp: new Date().toISOString() });
 });
 
 console.log('✅ Test route registered');
 
 // Auth Routes
 app.use('/api/auth', authRoutes);
-
 console.log('✅ Auth routes registered');
+
+// Infoletter Routes
+app.use('/api/infoletters', infoletterRoutes);
+console.log('✅ Infoletter routes registered');
 
 // 404 Handler
 app.use((req, res) => {
@@ -32,9 +51,12 @@ app.use((req, res) => {
 });
 
 // Error Handler
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => { 
-  console.error('❌ Error:', err);
-  res.status(500).json({ error: 'Internal Server Error' });
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('❌ Error:', err.message || err);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error',
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+  });
 });
 
 console.log('✅ App.ts complete');
