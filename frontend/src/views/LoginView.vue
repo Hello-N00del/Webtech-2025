@@ -157,13 +157,15 @@ const handleLogin = async () => {
 
     console.log('🔑 Logging in...')
     await authStore.login(email, password)
-    console.log('✅ Login successful, waiting for redirect...')
-    // 🚀 NO router.push() here - let App.vue handle the redirect!
-    // This ensures the auth state is properly updated first
+    console.log('✅ Login successful!')
+    
+    // 🚀 DIRECT redirect after successful login
+    console.log('🚀 Redirecting to dashboard...')
+    await router.push('/infoletter')
+    console.log('✅ Redirected to /infoletter')
   } catch (err: any) {
     console.error('❌ Login error:', err)
     error.value = err.message || 'Anmeldung fehlgeschlagen'
-  } finally {
     loading.value = false
   }
 }
@@ -186,12 +188,15 @@ const handleRegister = async () => {
 
     console.log('📝 Registering...')
     await authStore.register(email, password, name)
-    console.log('✅ Registration successful, waiting for redirect...')
-    // 🚀 NO router.push() here - let App.vue handle the redirect!
+    console.log('✅ Registration successful!')
+    
+    // 🚀 DIRECT redirect after successful registration
+    console.log('🚀 Redirecting to dashboard...')
+    await router.push('/infoletter')
+    console.log('✅ Redirected to /infoletter')
   } catch (err: any) {
     console.error('❌ Registration error:', err)
     error.value = err.message || 'Registrierung fehlgeschlagen'
-  } finally {
     loading.value = false
   }
 }
