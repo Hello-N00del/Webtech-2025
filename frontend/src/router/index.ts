@@ -20,19 +20,19 @@ import InfoletterForm from '../components/InfoletterForm.vue'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/public',
+    redirect: '/dashboard',
     meta: {
       title: 'Home'
     } as CustomRouteMeta
   },
   {
-    path: '/public',
+    path: '/dashboard',
     component: HelloWorld,
     meta: {
-      title: 'Welcome',
-      description: 'Öffentliche Landing Page',
+      title: 'Dashboard',
+      description: 'Dashboard',
+      requiresAuth: true,
       layout: 'default'
-      // requiresAuth undefined = öffentliche Route
     } as CustomRouteMeta
   },
   {
@@ -64,10 +64,18 @@ const routes: Array<RouteRecordRaw> = [
       requiresAuth: true,
       layout: 'default'
     } as CustomRouteMeta
+  },
+  // Fallback für 404 - MUSS LETZTER EINTRAG SEIN!
+  {
+    path: '/:pathMatch(.*)*',
+    component: HelloWorld,
+    meta: {
+      title: '404 - Nicht gefunden',
+      layout: 'default'
+    } as CustomRouteMeta
   }
   // TODO: Login Page hinzufügen
   // TODO: Register Page hinzufügen
-  // TODO: 404 Not Found Page hinzufügen
 ]
 
 /**
@@ -75,7 +83,9 @@ const routes: Array<RouteRecordRaw> = [
  */
 const router: Router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  strict: false,
+  sensitive: false
 })
 
 /**
