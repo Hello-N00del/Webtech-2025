@@ -27,11 +27,11 @@
         <p v-if="errors.title" class="text-red-600 text-sm mt-1">{{ errors.title }}</p>
       </div>
 
-      <!-- Image Upload Section -->
-      <div v-if="isEditing" class="space-y-4">
+      <!-- Image Upload Section (Available from creation) -->
+      <div class="space-y-4">
         <div>
           <label class="block text-sm font-semibold text-slate-900 mb-2">
-            Bilder
+            Bilder (Optional)
           </label>
           <div class="space-y-3">
             <!-- Upload Input -->
@@ -42,17 +42,19 @@
                 accept="image/*"
                 @change="handleImageSelect"
                 class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                :disabled="!isEditing"
               />
               <button
                 type="button"
                 @click="uploadImage"
-                :disabled="!selectedImage || uploading"
+                :disabled="!selectedImage || uploading || !isEditing"
                 class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span v-if="uploading">Lädt...</span>
                 <span v-else>Hochladen</span>
               </button>
             </div>
+            <p v-if="!isEditing" class="text-sm text-slate-500 italic">Bilder können nach dem Erstellen hinzugefügt werden</p>
 
             <!-- Image Gallery -->
             <div v-if="images.length > 0" class="grid grid-cols-3 gap-3">
@@ -165,7 +167,7 @@
           </div>
 
           <!-- Editor -->
-          <EditorContent :editor="editor" class="prose prose-sm max-w-none p-4 min-h-96 focus:outline-none" />
+          <EditorContent :editor="editor" class="editor-content p-4 min-h-96 focus:outline-none" />
         </div>
         <p v-if="errors.content" class="text-red-600 text-sm mt-1">{{ errors.content }}</p>
       </div>
@@ -421,31 +423,58 @@ onMounted(() => {
 </script>
 
 <style scoped>
-:deep(.ProseMirror) {
-  @apply focus:outline-none;
+.editor-content :deep(p) {
+  margin: 0.5rem 0;
 }
 
-:deep(.ProseMirror p) {
-  @apply my-2;
+.editor-content :deep(h1) {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 1rem 0 0.5rem 0;
 }
 
-:deep(.ProseMirror h1) {
-  @apply text-2xl font-bold my-2;
+.editor-content :deep(h2) {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0.8rem 0 0.4rem 0;
 }
 
-:deep(.ProseMirror h2) {
-  @apply text-xl font-bold my-2;
+.editor-content :deep(ul),
+.editor-content :deep(ol) {
+  margin: 0.5rem 0 0.5rem 1.5rem;
 }
 
-:deep(.ProseMirror ul) {
-  @apply list-disc list-inside my-2;
+.editor-content :deep(li) {
+  margin: 0.25rem 0;
 }
 
-:deep(.ProseMirror ol) {
-  @apply list-decimal list-inside my-2;
+.editor-content :deep(blockquote) {
+  border-left: 4px solid #4f46e5;
+  padding-left: 1rem;
+  margin: 0.5rem 0;
+  font-style: italic;
+  color: #6b7280;
 }
 
-:deep(.ProseMirror blockquote) {
-  @apply border-l-4 border-indigo-500 pl-4 italic my-2;
+.editor-content :deep(code) {
+  background-color: #f3f4f6;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: monospace;
+}
+
+.editor-content :deep(pre) {
+  background-color: #1f2937;
+  color: #e5e7eb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 0.5rem 0;
+}
+
+.editor-content :deep(pre code) {
+  background-color: transparent;
+  padding: 0;
+  color: inherit;
 }
 </style>
