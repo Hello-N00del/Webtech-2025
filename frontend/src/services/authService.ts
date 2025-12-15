@@ -1,6 +1,8 @@
+/**
  * Pinia Auth Store
  * Zentraler State Management für Authentifizierung und User-Daten
  */
+
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
