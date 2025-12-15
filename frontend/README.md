@@ -50,7 +50,7 @@ npm install
 Development Server starten
 npm run dev
 
-Frontend läuft auf [http://localhost:5173](http://localhost:5173)
+Frontend läuft auf [http://localhost:5173/public/](http://localhost:5173/public/)
 
 ---
 
