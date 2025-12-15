@@ -1,18 +1,18 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import type { RouteRecordRaw } from 'vue-router';
-import HelloWorld from '../components/HelloWorld.vue'
-import InfoletterFeed from '../components/InfoletterFeed.vue'
-import InfoletterForm from '../components/InfoletterForm.vue'  // neu importieren
+import { createRouter, createWebHistory } from "vue-router"
+import type { RouteRecordRaw } from "vue-router"
+import Dashboard from "../components/Dashboard.vue"
+import InfoletterFeed from "../components/InfoletterFeed.vue"
+import InfoletterForm from "../components/InfoletterForm.vue"
 
 const routes: Array<RouteRecordRaw> = [
-  { path: '/public/', component: HelloWorld },
-  { path: '/infoletter', component: InfoletterFeed },
-  { path: '/infoletter/create', component: InfoletterForm },  // neue Route
+  { path: "/", component: Dashboard },
+  { path: "/infoletter", component: InfoletterFeed },
+  { path: "/infoletter/create", component: InfoletterForm },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 export default router

@@ -1,36 +1,51 @@
-import { LoginCredentials, User } from '../models/types';
+import { defineStore } from "pinia"
+import type { User } from "../models/types"
+import { authService } from "../services/authService"
 
-// Service für Authentifizierung
-export const authService = {
-  // Mock-Login Funktion
-  login: async (credentials: LoginCredentials): Promise<User | null> => {
-    // Simuliere API-Aufruf
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (credentials.username && credentials.password) {
-          resolve({
-            id: Date.now().toString(),
-            username: credentials.username,
-            email: `${credentials.username}@example.com`
-          });
-        } else {
-          resolve(null);
+type Thread = {
+  title: string
+  content: string
+  category: string
+}
+
+export const useAppStore = defineStore("app", {
+  state: () => ({
+    currentUser: null as User | null,
+    isAuthenticated: false,
+    loading: false,
+    threads: [] as Thread[],
+  }),
+
+  actions: {
+    async login(username: string, password: string) {
+      if (!authService.validateCredentials(username, password)) {
+        return
+      }
+      this.loading = true
+      try {
+        const user = await authService.login({ username, password })
+        if (user) {
+          this.currentUser = user
+          this.isAuthenticated = true
         }
-      }, 500);
-    });
-  },
+      } finally {
+        this.loading = false
+      }
+    },
 
-  // Logout Funktion
-  logout: async (): Promise<void> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 200);
-    });
-  },
+    async logout() {
+      this.loading = true
+      try {
+        await authService.logout()
+      } finally {
+        this.currentUser = null
+        this.isAuthenticated = false
+        this.loading = false
+      }
+    },
 
-  // Validierung
-  validateCredentials: (username: string, password: string): boolean => {
-    return username.length >= 3 && password.length >= 3;
-  }
-};
+    addThread(title: string, content: string, category: string) {
+      this.threads.push({ title, content, category })
+    },
+  },
+})
