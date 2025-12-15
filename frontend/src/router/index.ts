@@ -127,6 +127,7 @@ router.beforeEach((to, from, next) => {
   const result = checkRouteAccess(to.meta as CustomRouteMeta)
 
   if (!result.allowed) {
+    console.log('🔐 Route access denied, redirecting to:', result.redirectTo)
     if (result.redirectTo) {
       next({
         path: result.redirectTo,
@@ -138,6 +139,7 @@ router.beforeEach((to, from, next) => {
     return
   }
 
+  console.log('✅ Route access allowed:', to.path)
   next()
 })
 
