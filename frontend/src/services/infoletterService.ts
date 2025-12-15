@@ -30,7 +30,7 @@ export const infoletterService = {
   /**
    * Alle Infoletters abrufen
    */
-  async fetchInfoletters(params?: InfoletterQueryParams): Promise<Infoletter[]> {
+  async getAll(params?: InfoletterQueryParams): Promise<Infoletter[]> {
     try {
       const response = await getRequest<Infoletter[]>('/infoletters', {
         params
@@ -43,9 +43,16 @@ export const infoletterService = {
   },
 
   /**
+   * Alle Infoletters abrufen (Alias)
+   */
+  async fetchInfoletters(params?: InfoletterQueryParams): Promise<Infoletter[]> {
+    return this.getAll(params)
+  },
+
+  /**
    * Einzelnen Infoletter abrufen
    */
-  async fetchInfoletter(id: string): Promise<Infoletter> {
+  async getById(id: string): Promise<Infoletter> {
     try {
       const response = await getRequest<Infoletter>(`/infoletters/${id}`)
       return response as Infoletter
@@ -56,9 +63,16 @@ export const infoletterService = {
   },
 
   /**
+   * Einzelnen Infoletter abrufen (Alias)
+   */
+  async fetchInfoletter(id: string): Promise<Infoletter> {
+    return this.getById(id)
+  },
+
+  /**
    * Neuen Infoletter erstellen
    */
-  async createInfoletter(data: { title: string; content: string }): Promise<Infoletter> {
+  async create(data: { title: string; content: string }): Promise<Infoletter> {
     try {
       const response = await postRequest<Infoletter>('/infoletters', data)
       return response as Infoletter
@@ -69,9 +83,16 @@ export const infoletterService = {
   },
 
   /**
+   * Neuen Infoletter erstellen (Alias)
+   */
+  async createInfoletter(data: { title: string; content: string }): Promise<Infoletter> {
+    return this.create(data)
+  },
+
+  /**
    * Infoletter aktualisieren
    */
-  async updateInfoletter(
+  async update(
     id: string,
     data: { title: string; content: string; status?: 'DRAFT' | 'PUBLISHED' }
   ): Promise<Infoletter> {
@@ -85,15 +106,32 @@ export const infoletterService = {
   },
 
   /**
+   * Infoletter aktualisieren (Alias)
+   */
+  async updateInfoletter(
+    id: string,
+    data: { title: string; content: string; status?: 'DRAFT' | 'PUBLISHED' }
+  ): Promise<Infoletter> {
+    return this.update(id, data)
+  },
+
+  /**
    * Infoletter löschen
    */
-  async deleteInfoletter(id: string): Promise<any> {
+  async delete(id: string): Promise<any> {
     try {
       return await deleteRequest(`/infoletters/${id}`)
     } catch (error) {
       console.error('Error deleting infoletter:', error)
       throw error
     }
+  },
+
+  /**
+   * Infoletter löschen (Alias)
+   */
+  async deleteInfoletter(id: string): Promise<any> {
+    return this.delete(id)
   },
 
   /**
@@ -136,7 +174,7 @@ export const infoletterService = {
       formData.append('image', file)
       return await postRequest(
         `/infoletters/${infoletterId}/images`,
-        formData,
+        formData as any,
         {
           headers: {
             'Content-Type': 'multipart/form-data'
