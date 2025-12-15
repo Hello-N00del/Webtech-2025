@@ -11,8 +11,10 @@ export const useAuthStore = defineStore("auth", () => {
   const error = ref<string>("")
   const isInitialized = ref(false)
 
+  // ✅ FIX: isAuthenticated sollte nur den Token-Status prüfen
+  // NOT: user.value, da dieser asynchron geladen wird
   const isAuthenticated = computed(() => {
-    return authService.isAuthenticated() && !!user.value
+    return authService.isAuthenticated()
   })
 
   const isAdmin = computed(() => user.value?.role === "ADMIN")
