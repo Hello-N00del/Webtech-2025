@@ -53,6 +53,15 @@ export const tokenManager = {
   },
 
   /**
+   * ✅ Prüft ob ein gültiger Access Token vorhanden ist (NEUE METHODE)
+   */
+  hasValidAccessToken(): boolean {
+    const token = localStorage.getItem(ACCESS_TOKEN_KEY)
+    if (!token) return false
+    return !this.isTokenExpired()
+  },
+
+  /**
    * Löscht alle Tokens aus localStorage
    */
   clearTokens(): void {
