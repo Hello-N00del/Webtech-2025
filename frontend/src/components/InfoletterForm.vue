@@ -28,10 +28,10 @@
       </div>
 
       <!-- Image Upload Section (Available from creation) -->
-      <div class="space-y-4">
+      <div v-if="isEditing" class="space-y-4 bg-indigo-50 p-4 rounded-lg border border-indigo-200">
         <div>
           <label class="block text-sm font-semibold text-slate-900 mb-2">
-            Bilder (Optional)
+            📸 Bilder hochladen
           </label>
           <div class="space-y-3">
             <!-- Upload Input -->
@@ -42,44 +42,58 @@
                 accept="image/*"
                 @change="handleImageSelect"
                 class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                :disabled="!isEditing"
               />
               <button
                 type="button"
                 @click="uploadImage"
-                :disabled="!selectedImage || uploading || !isEditing"
+                :disabled="!selectedImage || uploading"
                 class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span v-if="uploading">Lädt...</span>
+                <span v-if="uploading" class="flex items-center gap-2">
+                  <span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                  Lädt...
+                </span>
                 <span v-else>Hochladen</span>
               </button>
             </div>
-            <p v-if="!isEditing" class="text-sm text-slate-500 italic">Bilder können nach dem Erstellen hinzugefügt werden</p>
+            <p v-if="uploadError" class="text-red-600 text-sm">❌ {{ uploadError }}</p>
 
             <!-- Image Gallery -->
-            <div v-if="images.length > 0" class="grid grid-cols-3 gap-3">
-              <div
-                v-for="image in images"
-                :key="image.id"
-                class="relative group"
-              >
-                <img
-                  :src="image.url"
-                  :alt="image.filename"
-                  class="w-full h-24 object-cover rounded-lg border border-slate-200"
-                />
-                <button
-                  type="button"
-                  @click="removeImage(image.id)"
-                  class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+            <div v-if="images.length > 0" class="mt-4">
+              <h3 class="text-sm font-semibold text-slate-900 mb-3">{{ images.length }} Bild(er)</h3>
+              <div class="grid grid-cols-3 gap-3">
+                <div
+                  v-for="image in images"
+                  :key="image.id"
+                  class="relative group"
                 >
-                  ✕
-                </button>
-                <p class="text-xs text-slate-600 mt-1 truncate">{{ image.filename }}</p>
+                  <img
+                    :src="getImageUrl(image)"
+                    :alt="image.filename"
+                    @error="handleImageError(image.id)"
+                    class="w-full h-24 object-cover rounded-lg border border-slate-200"
+                  />
+                  <button
+                    type="button"
+                    @click="removeImage(image.id)"
+                    class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                  >
+                    ✕
+                  </button>
+                  <p class="text-xs text-slate-600 mt-1 truncate">{{ image.filename }}</p>
+                </div>
               </div>
             </div>
+            <p v-else class="text-sm text-slate-600 italic">Keine Bilder hinzugefügt</p>
           </div>
         </div>
+      </div>
+
+      <!-- Hint for Create -->
+      <div v-if="!isEditing" class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+        <p class="text-sm text-blue-700">
+          💡 <strong>Tipp:</strong> Bilder können nach dem Erstellen des Infoletters hinzugefügt werden.
+        </p>
       </div>
 
       <!-- Rich-Text Editor Section -->
@@ -201,7 +215,7 @@
 
       <!-- Error Message -->
       <div v-if="error" class="p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
-        {{ error }}
+        ❌ {{ error }}
       </div>
 
       <!-- Action Buttons -->
@@ -292,7 +306,9 @@ const collaborators = ref<any[]>([])
 const images = ref<any[]>([])
 const selectedImage = ref<File | null>(null)
 const uploading = ref(false)
+const uploadError = ref('')
 const imageInput = ref<HTMLInputElement>()
+const failedImages = ref<Set<string>>(new Set())
 
 // Initialize TipTap Editor
 const editor = useEditor({
@@ -311,6 +327,8 @@ const loadInfoletter = async () => {
 
   try {
     const infoletter = await infoletterService.getById(route.params.id as string)
+    console.log('Loaded infoletter:', infoletter)
+    
     form.value = {
       title: infoletter.title,
       content: infoletter.content,
@@ -319,12 +337,14 @@ const loadInfoletter = async () => {
     collaborators.value = infoletter.collaborators || []
     images.value = infoletter.images || []
     
+    console.log('Images loaded:', images.value)
+    
     // Update editor content
     if (editor) {
       editor.commands.setContent(infoletter.content)
     }
   } catch (err: any) {
-    error.value = 'Fehler beim Laden des Infoletters'
+    error.value = 'Fehler beim Laden des Infoletters: ' + (err.message || 'Unbekannter Fehler')
     console.error('Error loading infoletter:', err)
   }
 }
@@ -366,8 +386,14 @@ const handleSubmit = async () => {
 }
 
 const handleImageSelect = (event: Event) => {
+  uploadError.value = ''
   const file = (event.target as HTMLInputElement).files?.[0]
   if (file) {
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      uploadError.value = 'Datei zu groß (max. 5MB)'
+      return
+    }
     selectedImage.value = file
   }
 }
@@ -376,22 +402,43 @@ const uploadImage = async () => {
   if (!selectedImage.value || !isEditing.value || !route.params.id) return
 
   uploading.value = true
+  uploadError.value = ''
+  
   try {
+    console.log('Uploading image:', selectedImage.value.name)
     const response = await infoletterService.uploadImage(
       route.params.id as string,
       selectedImage.value
     )
-    images.value.push(response)
+    
+    console.log('Upload response:', response)
+    
+    // Add URL to response if not present
+    const imageWithUrl = {
+      ...response,
+      url: response.url || response.filepath
+    }
+    
+    images.value.push(imageWithUrl)
     selectedImage.value = null
     if (imageInput.value) {
       imageInput.value.value = ''
     }
   } catch (err: any) {
-    error.value = 'Fehler beim Hochladen des Bildes'
+    uploadError.value = err.message || 'Fehler beim Hochladen des Bildes'
     console.error('Error uploading image:', err)
   } finally {
     uploading.value = false
   }
+}
+
+const getImageUrl = (image: any): string => {
+  // Try different possible URL fields
+  return image.url || image.filepath || `/uploads/infoletter-images/${image.filename}`
+}
+
+const handleImageError = (imageId: string) => {
+  failedImages.value.add(imageId)
 }
 
 const removeImage = async (imageId: string) => {
@@ -442,10 +489,12 @@ onMounted(() => {
 .editor-content :deep(ul),
 .editor-content :deep(ol) {
   margin: 0.5rem 0 0.5rem 1.5rem;
+  padding-left: 0;
 }
 
 .editor-content :deep(li) {
   margin: 0.25rem 0;
+  line-height: 1.5;
 }
 
 .editor-content :deep(blockquote) {
