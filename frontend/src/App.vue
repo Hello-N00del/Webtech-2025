@@ -10,7 +10,7 @@
 
     <!-- Router Content -->
     <template v-else>
-      <!-- ✅ HEADER - Visible on all pages (except public/auth routes) -->
+      <!-- ✅ HEADER - Always visible EXCEPT on public routes (Landing, Login, Register, Public View) -->
       <header v-if="!isPublicView" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <div class="flex items-center justify-between">
@@ -27,7 +27,7 @@
 
             <!-- Navigation -->
             <nav class="flex items-center gap-2 md:gap-3">
-              <!-- 📰 Newsletter - Always visible -->
+              <!-- 📰 Newsletter - Always visible in header -->
               <router-link
                 to="/"
                 class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg text-sm font-semibold transition"
@@ -37,7 +37,7 @@
                 <span class="hidden md:inline">Newsletter</span>
               </router-link>
 
-              <!-- ✅ AUTHENTICATED ONLY - Key: reactivity uses computed -->
+              <!-- ✅ AUTHENTICATED ONLY -->
               <template v-if="authStore.isAuthenticated">
                 <!-- Dashboard Link -->
                 <router-link
@@ -59,7 +59,7 @@
                 </button>
               </template>
 
-              <!-- ✅ UNAUTHENTICATED ONLY - Key: uses computed -->
+              <!-- ✅ UNAUTHENTICATED ONLY -->
               <template v-else>
                 <!-- Login Button -->
                 <router-link
@@ -76,7 +76,7 @@
         </div>
       </header>
 
-      <!-- Page Content -->
+      <!-- Page Content - WITH padding for authenticated pages -->
       <main v-if="!isPublicView" class="py-10">
         <div class="max-w-7xl mx-auto px-4 md:px-6">
           <!-- Dashboard/App Content -->
@@ -84,7 +84,7 @@
         </div>
       </main>
 
-      <!-- Full Screen Content (Public View, Landing) -->
+      <!-- Full Screen Content (Public View, Landing, Login, Register) -->
       <template v-else>
         <router-view :key="routeKey" />
       </template>
@@ -95,7 +95,7 @@
 <script setup lang="ts">
 import { useAuthStore } from './stores/authStore'
 import { useRouter, useRoute } from 'vue-router'
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { Home } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
@@ -105,11 +105,28 @@ const route = useRoute()
 // ✅ Force re-render on route change
 const routeKey = computed(() => route.fullPath)
 
-// ✅ Check if current route is a public view (no header)
+// ✅ Determine if this is a PUBLIC route (no header, full screen)
+// PUBLIC routes: Landing (/), Login (/login), Register (/register), Public View (/infoletter/:id/view)
+// PROTECTED routes: Dashboard (/infoletter), Edit (/infoletter/:id/edit), etc.
 const isPublicView = computed(() => {
-  const publicViewRoutes = ['/', '/login', '/register']
-  if (route.path.includes('/view')) return true  // Public Newsletter View
-  return publicViewRoutes.includes(route.path)
+  // These routes should be full-screen (no header)
+  const fullScreenRoutes = ['/', '/login', '/register']
+  
+  // Check if it's one of the full-screen routes
+  if (fullScreenRoutes.includes(route.path)) {
+    console.log('📄 Public full-screen route:', route.path)
+    return true
+  }
+  
+  // Check if it's a public newsletter view
+  if (route.path.includes('/view')) {
+    console.log('📄 Public newsletter view:', route.path)
+    return true
+  }
+  
+  // Otherwise it's a protected route (show header)
+  console.log('🔒 Protected route with header:', route.path)
+  return false
 })
 
 // Check if current route is home
@@ -130,7 +147,6 @@ const handleLogout = async () => {
 }
 
 // ✅ Watch for auth changes and redirect if needed
-// This ensures the user gets redirected AFTER login completes
 watch(
   () => authStore.isAuthenticated,
   async (isAuthenticated) => {
@@ -154,5 +170,7 @@ watch(
 
 // Debug logging
 console.log('🚀 App.vue loaded')
+console.log('Auth store isInitialized:', authStore.isInitialized)
 console.log('Auth store isAuthenticated:', authStore.isAuthenticated)
+console.log('Current route:', route.path)
 </script>
