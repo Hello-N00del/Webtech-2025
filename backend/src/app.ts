@@ -1,7 +1,11 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import authRoutes from './routes/authRoutes.js';
 import infoletterRoutes from './routes/infoletterRoutes.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 console.log('🔄 Loading app.ts...');
 
@@ -19,6 +23,10 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Static file serving for uploads
+app.use('/uploads', express.static(path.join(__dirname, '../../public/uploads')));
+console.log('✅ Static files serving enabled');
 
 // Log requests
 app.use((req, res, next) => {
