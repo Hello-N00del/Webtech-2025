@@ -263,8 +263,6 @@ const deleteMine = async (id: string) => {
 }
 
 const viewPublished = (id: string) => {
-  // Navigate to view public infoletter
-  // This could open a modal or navigate to a detail page
   router.push(`/infoletter/${id}/view`)
 }
 
@@ -277,8 +275,22 @@ const formatDate = (dateString: string) => {
   })
 }
 
-onMounted(() => {
-  loadMyInfoletters()
-  loadPublishedInfoletters()
+onMounted(async () => {
+  console.log('🔑 InfoletterFeed mounted, loading both datasets in parallel...')
+  
+  // ✅ Load BOTH in parallel with Promise.allSettled
+  // This is faster than loading sequentially
+  const results = await Promise.allSettled([
+    loadMyInfoletters(),
+    loadPublishedInfoletters()
+  ])
+  
+  results.forEach((result, index) => {
+    if (result.status === 'rejected') {
+      console.error(`❌ Load ${index === 0 ? 'mine' : 'published'} failed:`, result.reason)
+    }
+  })
+  
+  console.log('✅ InfoletterFeed data loaded')
 })
 </script>
