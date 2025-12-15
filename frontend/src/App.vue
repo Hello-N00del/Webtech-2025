@@ -10,8 +10,8 @@
 
     <!-- Router Content -->
     <template v-else>
-      <!-- ✅ HEADER - Visible on all pages -->
-      <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg sticky top-0 z-40">
+      <!-- ✅ HEADER - Visible on all pages (except public/auth routes) -->
+      <header v-if="!isPublicView" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <div class="flex items-center justify-between">
             <!-- Logo/Branding -->
@@ -27,7 +27,7 @@
 
             <!-- Navigation -->
             <nav class="flex items-center gap-2 md:gap-3">
-              <!-- 📰 Öffentliche Infoletter - Always visible -->
+              <!-- 📰 Newsletter - Always visible -->
               <router-link
                 to="/"
                 class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg text-sm font-semibold transition"
@@ -37,7 +37,7 @@
                 <span class="hidden md:inline">Newsletter</span>
               </router-link>
 
-              <!-- ✅ AUTHENTICATED ONLY -->
+              <!-- ✅ AUTHENTICATED ONLY - Key: reactivity uses computed -->
               <template v-if="authStore.isAuthenticated">
                 <!-- Dashboard Link -->
                 <router-link
@@ -55,11 +55,11 @@
                   class="px-3 md:px-4 py-2 rounded-lg text-sm font-semibold bg-red-500/80 text-white hover:bg-red-600 transition"
                 >
                   <span class="hidden md:inline">Abmelden</span>
-                  <span class="md:hidden">💪</span>
+                  <span class="md:hidden">🚪</span>
                 </button>
               </template>
 
-              <!-- ❌ UNAUTHENTICATED ONLY -->
+              <!-- ✅ UNAUTHENTICATED ONLY - Key: uses computed -->
               <template v-else>
                 <!-- Login Button -->
                 <router-link
@@ -69,15 +69,6 @@
                 >
                   <span class="hidden md:inline">Anmelden</span>
                   <span class="md:hidden">Login</span>
-                </router-link>
-
-                <!-- Register Button -->
-                <router-link
-                  to="/register"
-                  class="hidden md:flex px-4 py-2 rounded-lg text-sm font-semibold bg-white/20 text-white border border-white/30 hover:bg-white/30 transition"
-                  active-class="bg-white/40"
-                >
-                  Registrieren
                 </router-link>
               </template>
             </nav>
@@ -89,13 +80,13 @@
       <main v-if="!isPublicView" class="py-10">
         <div class="max-w-7xl mx-auto px-4 md:px-6">
           <!-- Dashboard/App Content -->
-          <router-view />
+          <router-view :key="routeKey" />
         </div>
       </main>
 
       <!-- Full Screen Content (Public View, Landing) -->
       <template v-else>
-        <router-view />
+        <router-view :key="routeKey" />
       </template>
     </template>
   </div>
@@ -104,12 +95,15 @@
 <script setup lang="ts">
 import { useAuthStore } from './stores/authStore'
 import { useRouter, useRoute } from 'vue-router'
-import { computed, onMounted, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Home } from 'lucide-vue-next'
 
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
+
+// ✅ Force re-render on route change
+const routeKey = computed(() => route.fullPath)
 
 // ✅ Check if current route is a public view (no header)
 const isPublicView = computed(() => {
@@ -125,32 +119,40 @@ const isHome = computed(() => {
 
 const handleLogout = async () => {
   try {
+    console.log('🚪 Starting logout...')
     await authStore.logout()
+    console.log('✅ Logout complete')
     await router.push('/')
+    console.log('✅ Redirected to home')
   } catch (error) {
     console.error('Logout failed:', error)
   }
 }
 
 // ✅ Watch for auth changes and redirect if needed
+// This ensures the user gets redirected AFTER login completes
 watch(
   () => authStore.isAuthenticated,
   async (isAuthenticated) => {
     console.log('🔄 Auth status changed to:', isAuthenticated)
+    console.log('📍 Current route:', route.path)
     
-    // If user just logged in and is on a public route, redirect to dashboard
+    // If user just logged in and is on login/register page, redirect to dashboard
     if (isAuthenticated && (route.path === '/login' || route.path === '/register')) {
-      console.log('🔄 Redirecting to dashboard after login...')
-      await router.push('/infoletter')
+      console.log('✅ User logged in, redirecting to dashboard...')
+      try {
+        // Small delay to ensure all state updates are processed
+        await new Promise(resolve => setTimeout(resolve, 100))
+        await router.push('/infoletter')
+        console.log('✅ Redirected to /infoletter')
+      } catch (err) {
+        console.error('Redirect failed:', err)
+      }
     }
   }
 )
 
 // Debug logging
-onMounted(() => {
-  console.log('🏠 App.vue mounted')
-  console.log('isInitialized:', authStore.isInitialized)
-  console.log('isAuthenticated:', authStore.isAuthenticated)
-  console.log('Current route:', router.currentRoute.value.path)
-})
+console.log('🚀 App.vue loaded')
+console.log('Auth store isAuthenticated:', authStore.isAuthenticated)
 </script>
