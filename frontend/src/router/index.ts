@@ -13,6 +13,7 @@ import LandingPage from '../views/LandingPage.vue'
 import HelloWorld from '../components/HelloWorld.vue'
 import InfoletterFeed from '../components/InfoletterFeed.vue'
 import InfoletterForm from '../components/InfoletterForm.vue'
+import PublicInfoletterView from '../views/PublicInfoletterView.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 
@@ -56,6 +57,18 @@ const routes: Array<RouteRecordRaw> = [
     meta: {
       title: 'Welcome',
       description: 'Öffentliche Landing Page',
+      layout: 'default'
+      // requiresAuth undefined = öffentliche Route
+    } as CustomRouteMeta
+  },
+
+  // ✅ Public Infoletter View (no auth required)
+  {
+    path: '/infoletter/:id/view',
+    component: PublicInfoletterView,
+    meta: {
+      title: 'Newsletter ansehen',
+      description: 'Öffentlicher Newsletter',
       layout: 'default'
       // requiresAuth undefined = öffentliche Route
     } as CustomRouteMeta
