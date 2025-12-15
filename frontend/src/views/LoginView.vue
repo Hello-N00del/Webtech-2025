@@ -159,10 +159,13 @@ const handleLogin = async () => {
     await authStore.login(email, password)
     console.log('✅ Login successful!')
     
-    // 🚀 DIRECT redirect after successful login
+    // 🚀 IMMEDIATE redirect - don't wait!
     console.log('🚀 Redirecting to dashboard...')
-    await router.push('/infoletter')
-    console.log('✅ Redirected to /infoletter')
+    router.push('/infoletter').catch(err => {
+      console.error('❌ Redirect error (ignoring):', err)
+    })
+    console.log('✅ Redirect initiated')
+    // Note: Loading stays true while redirect happens
   } catch (err: any) {
     console.error('❌ Login error:', err)
     error.value = err.message || 'Anmeldung fehlgeschlagen'
@@ -190,10 +193,13 @@ const handleRegister = async () => {
     await authStore.register(email, password, name)
     console.log('✅ Registration successful!')
     
-    // 🚀 DIRECT redirect after successful registration
+    // 🚀 IMMEDIATE redirect - don't wait!
     console.log('🚀 Redirecting to dashboard...')
-    await router.push('/infoletter')
-    console.log('✅ Redirected to /infoletter')
+    router.push('/infoletter').catch(err => {
+      console.error('❌ Redirect error (ignoring):', err)
+    })
+    console.log('✅ Redirect initiated')
+    // Note: Loading stays true while redirect happens
   } catch (err: any) {
     console.error('❌ Registration error:', err)
     error.value = err.message || 'Registrierung fehlgeschlagen'
