@@ -9,6 +9,7 @@ import type { CustomRouteMeta } from '../types/router'
 import { useRouterGuards } from '../composables/useRouterGuards'
 
 // Import Components
+import LandingPage from '../views/LandingPage.vue'
 import HelloWorld from '../components/HelloWorld.vue'
 import InfoletterFeed from '../components/InfoletterFeed.vue'
 import InfoletterForm from '../components/InfoletterForm.vue'
@@ -20,6 +21,17 @@ import RegisterView from '../views/RegisterView.vue'
  * Nutzt CustomRouteMeta für Authentication
  */
 const routes: Array<RouteRecordRaw> = [
+  // Public Routes (no auth required)
+  {
+    path: '/',
+    component: LandingPage,
+    meta: {
+      title: 'Home',
+      layout: 'default'
+      // requiresAuth undefined = öffentliche Route
+    } as CustomRouteMeta
+  },
+
   // Authentication Routes (no auth required)
   {
     path: '/login',
@@ -38,14 +50,6 @@ const routes: Array<RouteRecordRaw> = [
     } as CustomRouteMeta
   },
 
-  // Protected Routes (require auth)
-  {
-    path: '/',
-    redirect: '/public',
-    meta: {
-      title: "Home"
-    } as CustomRouteMeta
-  },
   {
     path: '/public',
     component: HelloWorld,
@@ -56,6 +60,8 @@ const routes: Array<RouteRecordRaw> = [
       // requiresAuth undefined = öffentliche Route
     } as CustomRouteMeta
   },
+
+  // Protected Routes (require auth)
   {
     path: "/infoletter",
     component: InfoletterFeed,
