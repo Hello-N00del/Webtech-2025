@@ -1,55 +1,3 @@
-<<<<<<< HEAD
-import { Infoletter } from '../models/types';
-
-// Service für Infoletter-Operationen
-export const infoletterService = {
-  // Mock-Daten abrufen
-  getInfoletters: async (): Promise<Infoletter[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([]);
-      }, 300);
-    });
-  },
-
-  // Neuen Infoletter erstellen
-  createInfoletter: async (
-    title: string,
-    content: string,
-    author: string,
-    authorId: string
-  ): Promise<Infoletter> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const newInfoletter: Infoletter = {
-          id: Date.now().toString(),
-          title,
-          content,
-          author,
-          authorId,
-          createdAt: new Date(),
-          likes: 0
-        };
-        resolve(newInfoletter);
-      }, 300);
-    });
-  },
-
-  // Infoletter liken
-  likeInfoletter: async (id: string): Promise<void> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 200);
-    });
-  },
-
-  // Validierung
-  validateInfoletter: (title: string, content: string): boolean => {
-    return title.trim().length > 0 && content.trim().length > 0;
-  }
-};
-=======
 /**
  * Infoletter Service
  * Behandelt alle Infoletter-bezogenen API-Calls
@@ -59,11 +7,9 @@ import {
   getRequest,
   postRequest,
   putRequest,
-  patchRequest,
   deleteRequest
 } from './api'
 import type { Infoletter } from '../models/infoletter'
-import type { ApiResponse, PaginatedResponse } from '../types/api'
 
 /**
  * Infoletter Query Parameters für Pagination und Filter
@@ -82,14 +28,16 @@ export interface InfoletterQueryParams {
  */
 export const infoletterService = {
   /**
-   * Alle Infoletters abrufen (paginiert)
+   * Alle Infoletters abrufen
    */
-  async fetchInfoletters(params?: InfoletterQueryParams): Promise<PaginatedResponse<Infoletter>> {
+  async fetchInfoletters(params?: InfoletterQueryParams): Promise<Infoletter[]> {
     try {
-      return await getRequest<PaginatedResponse<Infoletter>>('/infoletters', {
+      const response = await getRequest<Infoletter[]>('/infoletters', {
         params
       })
+      return Array.isArray(response) ? response : []
     } catch (error) {
+      console.error('Error fetching infoletters:', error)
       throw error
     }
   },
@@ -99,12 +47,10 @@ export const infoletterService = {
    */
   async fetchInfoletter(id: string): Promise<Infoletter> {
     try {
-      const response = await getRequest<ApiResponse<Infoletter>>(`/infoletters/${id}`)
-      if (response && typeof response === 'object') {
-        return response as Infoletter
-      }
-      throw new Error('Ungültige Response-Struktur')
+      const response = await getRequest<Infoletter>(`/infoletters/${id}`)
+      return response as Infoletter
     } catch (error) {
+      console.error('Error fetching infoletter:', error)
       throw error
     }
   },
@@ -112,14 +58,12 @@ export const infoletterService = {
   /**
    * Neuen Infoletter erstellen
    */
-  async createInfoletter(data: Partial<Infoletter>): Promise<Infoletter> {
+  async createInfoletter(data: { title: string; content: string }): Promise<Infoletter> {
     try {
-      const response = await postRequest<ApiResponse<Infoletter>>('/infoletters', data)
-      if (response && typeof response === 'object') {
-        return response as Infoletter
-      }
-      throw new Error('Ungültige Response-Struktur')
+      const response = await postRequest<Infoletter>('/infoletters', data)
+      return response as Infoletter
     } catch (error) {
+      console.error('Error creating infoletter:', error)
       throw error
     }
   },
@@ -127,17 +71,15 @@ export const infoletterService = {
   /**
    * Infoletter aktualisieren
    */
-  async updateInfoletter(id: string, data: Partial<Infoletter>): Promise<Infoletter> {
+  async updateInfoletter(
+    id: string,
+    data: { title: string; content: string; status?: 'DRAFT' | 'PUBLISHED' }
+  ): Promise<Infoletter> {
     try {
-      const response = await putRequest<ApiResponse<Infoletter>>(
-        `/infoletters/${id}`,
-        data
-      )
-      if (response && typeof response === 'object') {
-        return response as Infoletter
-      }
-      throw new Error('Ungültige Response-Struktur')
+      const response = await putRequest<Infoletter>(`/infoletters/${id}`, data)
+      return response as Infoletter
     } catch (error) {
+      console.error('Error updating infoletter:', error)
       throw error
     }
   },
@@ -145,28 +87,42 @@ export const infoletterService = {
   /**
    * Infoletter löschen
    */
-  async deleteInfoletter(id: string): Promise<ApiResponse> {
+  async deleteInfoletter(id: string): Promise<any> {
     try {
-      return await deleteRequest<ApiResponse>(`/infoletters/${id}`)
+      return await deleteRequest(`/infoletters/${id}`)
     } catch (error) {
+      console.error('Error deleting infoletter:', error)
       throw error
     }
   },
 
   /**
-   * Infoletter veröffentlichen
+   * Collaborator hinzufügen
    */
-  async publishInfoletter(id: string): Promise<Infoletter> {
+  async addCollaborator(
+    infoletterId: string,
+    data: { userId: string; role: 'CO_AUTHOR' | 'EDITOR' | 'VIEWER' }
+  ): Promise<any> {
     try {
-      const response = await patchRequest<ApiResponse<Infoletter>>(
-        `/infoletters/${id}/publish`,
-        {}
+      const response = await postRequest(
+        `/infoletters/${infoletterId}/collaborators`,
+        data
       )
-      if (response && typeof response === 'object') {
-        return response as Infoletter
-      }
-      throw new Error('Ungültige Response-Struktur')
+      return response
     } catch (error) {
+      console.error('Error adding collaborator:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Collaborator entfernen
+   */
+  async removeCollaborator(infoletterId: string, userId: string): Promise<any> {
+    try {
+      return await deleteRequest(`/infoletters/${infoletterId}/collaborators/${userId}`)
+    } catch (error) {
+      console.error('Error removing collaborator:', error)
       throw error
     }
   },
@@ -174,11 +130,11 @@ export const infoletterService = {
   /**
    * Bild zu Infoletter hochladen
    */
-  async uploadImage(infoletterId: string, file: File): Promise<ApiResponse> {
+  async uploadImage(infoletterId: string, file: File): Promise<any> {
     try {
       const formData = new FormData()
       formData.append('image', file)
-      return await postRequest<ApiResponse>(
+      return await postRequest(
         `/infoletters/${infoletterId}/images`,
         formData,
         {
@@ -188,17 +144,7 @@ export const infoletterService = {
         }
       )
     } catch (error) {
-      throw error
-    }
-  },
-
-  /**
-   * Alle Bilder eines Infoletters abrufen
-   */
-  async fetchImages(infoletterId: string): Promise<ApiResponse> {
-    try {
-      return await getRequest<ApiResponse>(`/infoletters/${infoletterId}/images`)
-    } catch (error) {
+      console.error('Error uploading image:', error)
       throw error
     }
   },
@@ -206,14 +152,12 @@ export const infoletterService = {
   /**
    * Bild löschen
    */
-  async deleteImage(infoletterId: string, imageId: string): Promise<ApiResponse> {
+  async deleteImage(imageId: string): Promise<any> {
     try {
-      return await deleteRequest<ApiResponse>(
-        `/infoletters/${infoletterId}/images/${imageId}`
-      )
+      return await deleteRequest(`/infoletters/images/${imageId}`)
     } catch (error) {
+      console.error('Error deleting image:', error)
       throw error
     }
   }
 }
->>>>>>> d0112fdb486b291f21df2f7420be7646195b4ea5
