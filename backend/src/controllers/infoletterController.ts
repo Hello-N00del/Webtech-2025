@@ -20,6 +20,17 @@ export const getInfoletters = async (req: Request, res: Response) => {
   }
 };
 
+// ✅ Get all PUBLISHED infoletters (public for everyone)
+export const getPublishedInfolitters = async (req: Request, res: Response) => {
+  try {
+    const infoletters = await infoletterService.getPublishedInfolitters();
+    res.json(infoletters);
+  } catch (err: any) {
+    console.error('Error fetching published infoletters:', err);
+    res.status(400).json({ error: err.message || 'Failed to fetch published infoletters' });
+  }
+};
+
 export const getInfoletter = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
