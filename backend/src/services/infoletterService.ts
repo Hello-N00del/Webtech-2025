@@ -82,6 +82,41 @@ export const getPublishedInfolitters = async () => {
   return infoletters;
 };
 
+// ✅ Get single PUBLISHED infoletter by ID (public - no auth required)
+export const getPublishedInfoletter = async (infoletterId: string) => {
+  console.log(`📄 Service: Getting published infoletter ${infoletterId}`);
+  
+  const infoletter = await prisma.infoletter.findUnique({
+    where: { id: infoletterId, deletedAt: null },
+    include: {
+      owner: {
+        select: { id: true, name: true, email: true, profileImageUrl: true },
+      },
+      collaborators: {
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, profileImageUrl: true },
+          },
+        },
+      },
+      images: true,  // Include images for gallery
+      versions: { orderBy: { versionNumber: 'desc' } },
+    },
+  });
+
+  if (!infoletter) {
+    throw new Error('Infoletter not found');
+  }
+
+  // Check if published
+  if (infoletter.status !== 'PUBLISHED') {
+    throw new Error('Infoletter not published');
+  }
+
+  console.log(`📄 Service: Found published infoletter: ${infoletter.title}`);
+  return infoletter;
+};
+
 // Get single infoletter by ID
 export const getInfoletter = async (infoletterId: string, userId: string) => {
   const infoletter = await prisma.infoletter.findUnique({
