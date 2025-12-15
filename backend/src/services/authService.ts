@@ -47,25 +47,38 @@ export const registerUser = async (
   const emailVerifyToken = uuidv4();
   const emailVerifyExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
+  // ✅ AUTO-VERIFY in development
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+
   const user = await prisma.user.create({
     data: {
       email,
       passwordHash,
       name,
-      emailVerifyToken,
-      emailVerifyExpiry,
+      emailVerifyToken: isDevelopment ? null : emailVerifyToken,
+      emailVerifyExpiry: isDevelopment ? null : emailVerifyExpiry,
+      emailVerified: isDevelopment, // ✅ Auto-verify in dev
       role: 'USER',
     },
   });
 
-  // Send verification email - DYNAMISCHE URL
-  const verificationUrl = `${env.BASE_URL}/api/auth/verify-email/${emailVerifyToken}`;
-  
-  await sendEmail(
-    email,
-    'Verify your email address',
-    `Hello ${name},\n\nPlease verify your email by clicking this link:\n${verificationUrl}\n\nThis link expires in 24 hours.`
-  );
+  // Send verification email only in production
+  if (!isDevelopment) {
+    const verificationUrl = `${env.BASE_URL}/api/auth/verify-email/${emailVerifyToken}`;
+    
+    try {
+      await sendEmail(
+        email,
+        'Verify your email address',
+        `Hello ${name},\n\nPlease verify your email by clicking this link:\n${verificationUrl}\n\nThis link expires in 24 hours.`
+      );
+    } catch (error) {
+      console.error('Failed to send verification email:', error);
+      // Don't fail registration if email fails
+    }
+  } else {
+    console.log(`🔶 Development mode: Auto-verified user ${email}`);
+  }
 
   // Log registration
   await logAudit(user.id, AuditAction.REGISTER, 'User', user.id, { email, name }, ipAddress, userAgent);
@@ -118,7 +131,9 @@ export const loginUser = async (
     throw new Error('Invalid email or password');
   }
 
-  if (!user.emailVerified) {
+  // ✅ Skip email verification check in development
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  if (!isDevelopment && !user.emailVerified) {
     throw new Error('Please verify your email before logging in');
   }
 
@@ -150,12 +165,14 @@ export const loginUser = async (
   return {
     accessToken,
     refreshToken,
+    expiresIn: 3600,
     user: {
       id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
       profileImageUrl: user.profileImageUrl,
+      createdAt: user.createdAt.toISOString(),
     },
   };
 };
@@ -212,14 +229,17 @@ export const requestPasswordReset = async (email: string) => {
     },
   });
 
-  // DYNAMISCHE URL
   const resetUrl = `${env.BASE_URL}/api/auth/reset-password?token=${resetToken}`;
 
-  await sendEmail(
-    email,
-    'Password Reset Request',
-    `Hello ${user.name},\n\nYou requested a password reset. Click this link to reset your password:\n${resetUrl}\n\nThis link expires in 24 hours.\n\nIf you didn't request this, please ignore this email.`
-  );
+  try {
+    await sendEmail(
+      email,
+      'Password Reset Request',
+      `Hello ${user.name},\n\nYou requested a password reset. Click this link to reset your password:\n${resetUrl}\n\nThis link expires in 24 hours.\n\nIf you didn't request this, please ignore this email.`
+    );
+  } catch (error) {
+    console.error('Failed to send password reset email:', error);
+  }
 
   await logAudit(user.id, AuditAction.PASSWORD_RESET, 'User', user.id);
 };
