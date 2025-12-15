@@ -55,6 +55,33 @@ export const getUserInfolitters = async (userId: string) => {
   return infoletters;
 };
 
+// ✅ Get all PUBLISHED infoletters (public for all users)
+export const getPublishedInfolitters = async () => {
+  const infoletters = await prisma.infoletter.findMany({
+    where: {
+      status: 'PUBLISHED',
+      deletedAt: null,
+    },
+    include: {
+      owner: {
+        select: { id: true, name: true, email: true, profileImageUrl: true },
+      },
+      collaborators: {
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, profileImageUrl: true },
+          },
+        },
+      },
+      images: true,
+      versions: { orderBy: { createdAt: 'desc' }, take: 1 },
+    },
+    orderBy: { publishedAt: 'desc' },
+  });
+
+  return infoletters;
+};
+
 // Get single infoletter by ID
 export const getInfoletter = async (infoletterId: string, userId: string) => {
   const infoletter = await prisma.infoletter.findUnique({
