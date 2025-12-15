@@ -8,7 +8,8 @@ import type { Router, RouteRecordRaw } from 'vue-router'
 import type { CustomRouteMeta } from '../types/router'
 import { useRouterGuards } from '../composables/useRouterGuards'
 
-// Import Components
+// Import Components/Views
+import LoginView from '../views/LoginView.vue'
 import HelloWorld from '../components/HelloWorld.vue'
 import InfoletterFeed from '../components/InfoletterFeed.vue'
 import InfoletterForm from '../components/InfoletterForm.vue'
@@ -18,21 +19,32 @@ import InfoletterForm from '../components/InfoletterForm.vue'
  * Nutzt CustomRouteMeta für Authentication
  */
 const routes: Array<RouteRecordRaw> = [
+  // Authentication Routes (no auth required)
+  {
+    path: '/login',
+    component: LoginView,
+    meta: {
+      title: 'Anmelden',
+      layout: 'auth'
+    } as CustomRouteMeta
+  },
+
+  // Protected Routes (require auth)
   {
     path: '/',
-    redirect: '/public',
+    redirect: '/dashboard',
     meta: {
       title: 'Home'
     } as CustomRouteMeta
   },
   {
-    path: '/public',
+    path: '/dashboard',
     component: HelloWorld,
     meta: {
-      title: 'Welcome',
-      description: 'Öffentliche Landing Page',
+      title: 'Dashboard',
+      description: 'Dashboard',
+      requiresAuth: true,
       layout: 'default'
-      // requiresAuth undefined = öffentliche Route
     } as CustomRouteMeta
   },
   {
@@ -64,10 +76,17 @@ const routes: Array<RouteRecordRaw> = [
       requiresAuth: true,
       layout: 'default'
     } as CustomRouteMeta
+  },
+  
+  // Fallback für 404 - MUSS LETZTER EINTRAG SEIN!
+  {
+    path: '/:pathMatch(.*)*',
+    component: HelloWorld,
+    meta: {
+      title: '404 - Nicht gefunden',
+      layout: 'default'
+    } as CustomRouteMeta
   }
-  // TODO: Login Page hinzufügen
-  // TODO: Register Page hinzufügen
-  // TODO: 404 Not Found Page hinzufügen
 ]
 
 /**
@@ -75,7 +94,9 @@ const routes: Array<RouteRecordRaw> = [
  */
 const router: Router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+  strict: false,
+  sensitive: false
 })
 
 /**
