@@ -87,7 +87,7 @@
 
 <script setup lang="ts">
 import { ref } from "vue"
-import { useAuthStore } from "./stores/authStore" // Pfad ggf. anpassen
+import { useAuthStore } from "./stores/authStore"
 import HelloWorld from "./components/HelloWorld.vue"
 import Dashboard from "./components/Dashboard.vue"
 import InfoletterFeed from "./components/InfoletterFeed.vue"
