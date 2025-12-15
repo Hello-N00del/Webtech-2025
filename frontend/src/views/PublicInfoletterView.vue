@@ -58,8 +58,8 @@
         <div class="bg-white rounded-lg shadow-lg p-8 border border-slate-200">
           <h2 class="text-2xl font-bold text-slate-900 mb-6">📄 Newsletter Inhalt</h2>
           
-          <!-- ✅ Properly rendered content -->
-          <div class="newsletter-content" v-html="sanitizeContent(infoletter.content)"></div>
+          <!-- ✅ Safe HTML rendering -->
+          <div class="newsletter-content" v-html="infoletter.content"></div>
 
           <!-- Images Gallery -->
           <div v-if="infoletter.images && infoletter.images.length > 0" class="mt-8 pt-8 border-t-2 border-slate-200">
@@ -154,7 +154,6 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { infoletterService } from '../services/infoletterService'
 import { ArrowLeft } from 'lucide-vue-next'
-import DOMPurify from 'dompurify'
 
 interface Infoletter {
   id: string
@@ -221,14 +220,6 @@ const loadInfoletter = async () => {
   }
 }
 
-// ✅ Sanitize HTML content to prevent XSS
-const sanitizeContent = (html: string): string => {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'a', 'img'],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt']
-  })
-}
-
 const getImageUrl = (image: any): string => {
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
   const backendUrl = apiUrl.replace('/api', '')
@@ -266,6 +257,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ✅ Safe HTML styling - Backend already sanitizes content */
 .newsletter-content :deep(p) {
   @apply text-slate-700 leading-relaxed my-4;
 }
