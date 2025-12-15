@@ -11,8 +11,7 @@ export const useAuthStore = defineStore("auth", () => {
   const error = ref<string>("")
   const isInitialized = ref(false)
 
-  // ✅ FIX: isAuthenticated sollte nur den Token-Status prüfen
-  // NOT: user.value, da dieser asynchron geladen wird
+  // ✅ FIX: isAuthenticated prüft nur Token, nicht User-Daten
   const isAuthenticated = computed(() => {
     return authService.isAuthenticated()
   })
@@ -57,12 +56,15 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  // ✅ LOGIN - Optimiert für Performance
   async function login(email: string, password: string): Promise<UserInfo> {
     loading.value = true
     error.value = ""
 
     try {
+      // Login API gibt User-Daten direkt zurück
       const response = await authService.login({ email, password })
+      // Speichere User-Daten sofort (kein Extra-Request nötig!)
       user.value = response.user
       return response.user
     } catch (err) {
@@ -73,6 +75,25 @@ export const useAuthStore = defineStore("auth", () => {
       }
       throw err
     } finally {
+      loading.value = false
+    }
+  }
+
+  // ✅ LOGOUT - Optimiert für Performance
+  async function logout(): Promise<void> {
+    loading.value = true
+    error.value = ""
+
+    try {
+      // Logout API-Call ist optional (Token wird sowieso gelöscht)
+      // Aber wir versuchen es trotzdem (non-blocking)
+      await authService.logout()
+    } catch (err) {
+      // Logout-Fehler können ignoriert werden
+      console.warn("Logout API error (ignored):", err)
+    } finally {
+      // IMMER lokale Daten löschen - egal ob API-Call erfolgreich war
+      user.value = null
       loading.value = false
     }
   }
@@ -100,21 +121,6 @@ export const useAuthStore = defineStore("auth", () => {
         error.value = "Registrierung fehlgeschlagen"
       }
       throw err
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function logout(): Promise<void> {
-    loading.value = true
-    error.value = ""
-
-    try {
-      await authService.logout()
-      user.value = null
-    } catch (err) {
-      console.error("Logout error:", err)
-      user.value = null
     } finally {
       loading.value = false
     }
