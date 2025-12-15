@@ -59,7 +59,7 @@ POST {{baseUrl}}/api/auth/reset-password
 Content-Type: application/json
 
 {
-  "token": "f4035a62-d48c-40cb-9825-7be6dd17f748",
+  "token": "8f683a43-50d9-45cd-b366-7b1a4dca7aca",
   "newPassword": "newSecurePassword456"
 }
 
