@@ -31,6 +31,26 @@ export const getPublishedInfolitters = async (req: Request, res: Response) => {
   }
 };
 
+// ✅ Get single published infoletter by ID (PUBLIC - no auth required)
+export const getPublishedInfoletter = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    console.log(`📄 Fetching published infoletter: ${id}`);
+    
+    const infoletter = await infoletterService.getPublishedInfoletter(id);
+    
+    if (!infoletter) {
+      return res.status(404).json({ error: 'Infoletter not found or not published' });
+    }
+    
+    console.log(`📄 Found published infoletter:`, infoletter.title);
+    res.json(infoletter);
+  } catch (err: any) {
+    console.error('Error fetching published infoletter:', err);
+    res.status(400).json({ error: err.message || 'Failed to fetch infoletter' });
+  }
+};
+
 export const getInfoletter = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
