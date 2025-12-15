@@ -75,35 +75,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue"
-import { useRouter } from "vue-router"
-import { useAuthStore } from "./stores/authStore"
-import { Home, Mail } from "lucide-vue-next"
+import { ref } from "vue"
+import { useAuthStore } from "./stores/authStore" // Pfad ggf. anpassen
+import HelloWorld from "./components/HelloWorld.vue"
+import Dashboard from "./components/Dashboard.vue"
+import InfoletterFeed from "./components/InfoletterFeed.vue"
+import InfoletterForm from "./components/InfoletterForm.vue"
+import { Home, MessageSquare } from "lucide-vue-next"
 
-const router = useRouter()
-const authStore = useAuthStore()
+type View = "dashboard" | "forum"
 
-// Initialize auth state when app loads
-onMounted(async () => {
-  try {
-    await authStore.initializeAuth()
-    
-    // Redirect to login if not authenticated
-    if (!authStore.isAuthenticated && router.currentRoute.value.path !== '/login') {
-      router.push('/login')
-    }
-  } catch (error) {
-    console.error('Auth initialization failed:', error)
-    // Still set initialized to allow showing login page
-  }
-})
-
-const handleLogout = async () => {
-  try {
-    await authStore.logout()
-    router.push('/login')
-  } catch (error) {
-    console.error('Logout failed:', error)
-  }
-}
+const store = useAuthStore()
+const currentView = ref<View>("dashboard")
+const showNewThread = ref(false)
 </script>

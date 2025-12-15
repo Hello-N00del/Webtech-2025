@@ -8,8 +8,7 @@ import type { Router, RouteRecordRaw } from 'vue-router'
 import type { CustomRouteMeta } from '../types/router'
 import { useRouterGuards } from '../composables/useRouterGuards'
 
-// Import Components/Views
-import LoginView from '../views/LoginView.vue'
+// Import Components
 import HelloWorld from '../components/HelloWorld.vue'
 import InfoletterFeed from '../components/InfoletterFeed.vue'
 import InfoletterForm from '../components/InfoletterForm.vue'
@@ -32,66 +31,56 @@ const routes: Array<RouteRecordRaw> = [
   // Protected Routes (require auth)
   {
     path: '/',
-    redirect: '/dashboard',
+    redirect: '/public',
     meta: {
-      title: 'Home'
+      title: "Home"
     } as CustomRouteMeta
   },
   {
-    path: '/dashboard',
+    path: '/public',
     component: HelloWorld,
     meta: {
-      title: 'Dashboard',
-      description: 'Dashboard',
-      requiresAuth: true,
+      title: 'Welcome',
+      description: 'Öffentliche Landing Page',
       layout: 'default'
+      // requiresAuth undefined = öffentliche Route
     } as CustomRouteMeta
   },
   {
-    path: '/infoletter',
+    path: "/infoletter",
     component: InfoletterFeed,
     meta: {
-      title: 'Infoletters',
-      description: 'Meine Infoletters',
+      title: "Infoletters",
+      description: "Meine Infoletters",
       requiresAuth: true,
-      layout: 'default'
+      layout: "default"
     } as CustomRouteMeta
   },
   {
-    path: '/infoletter/create',
+    path: "/infoletter/create",
     component: InfoletterForm,
     meta: {
-      title: 'Neuer Infoletter',
-      description: 'Erstelle einen neuen Infoletter',
+      title: "Neuer Infoletter",
+      description: "Erstelle einen neuen Infoletter",
       requiresAuth: true,
-      layout: 'default'
+      layout: "default"
     } as CustomRouteMeta
   },
   {
-    path: '/infoletter/:id/edit',
+    path: "/infoletter/:id/edit",
     component: InfoletterForm,
     meta: {
-      title: 'Infoletter bearbeiten',
-      description: 'Bearbeite einen Infoletter',
+      title: "Infoletter bearbeiten",
+      description: "Bearbeite einen Infoletter",
       requiresAuth: true,
-      layout: 'default'
-    } as CustomRouteMeta
-  },
-  
-  // Fallback für 404 - MUSS LETZTER EINTRAG SEIN!
-  {
-    path: '/:pathMatch(.*)*',
-    component: HelloWorld,
-    meta: {
-      title: '404 - Nicht gefunden',
-      layout: 'default'
+      layout: "default"
     } as CustomRouteMeta
   }
+  // TODO: Login Page hinzufügen
+  // TODO: Register Page hinzufügen
+  // TODO: 404 Not Found Page hinzufügen
 ]
 
-/**
- * Erstelle Router-Instanz
- */
 const router: Router = createRouter({
   history: createWebHistory(),
   routes,
@@ -99,18 +88,11 @@ const router: Router = createRouter({
   sensitive: false
 })
 
-/**
- * ROUTER GUARDS - beforeEach
- * Führt vor jedem Route-Wechsel diese Checks durch
- */
 router.beforeEach((to, from, next) => {
   const { checkRouteAccess } = useRouterGuards()
-
   const result = checkRouteAccess(to.meta as CustomRouteMeta)
 
   if (!result.allowed) {
-    console.warn(`Access denied to route ${to.path}:`, result.reason)
-
     if (result.redirectTo) {
       next({
         path: result.redirectTo,
@@ -118,7 +100,6 @@ router.beforeEach((to, from, next) => {
       })
       return
     }
-
     next(false)
     return
   }
@@ -126,21 +107,14 @@ router.beforeEach((to, from, next) => {
   next()
 })
 
-/**
- * ROUTER GUARDS - afterEach
- * Nach erfolgreicher Navigation
- */
 router.afterEach((to) => {
-  const title = (to.meta as CustomRouteMeta)?.title || 'Webtech-2025'
+  const title = (to.meta as CustomRouteMeta)?.title || "Webtech-2025"
   document.title = `${title} - Webtech-2025`
   window.scrollTo(0, 0)
 })
 
-/**
- * ERROR HANDLER
- */
 router.onError((error) => {
-  console.error('Router Error:', error)
+  console.error("Router Error:", error)
 })
 
 export default router

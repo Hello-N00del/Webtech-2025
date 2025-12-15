@@ -1,81 +1,53 @@
-/**
- * Pinia Auth Store
- * Zentraler State Management für Authentifizierung und User-Daten
- */
+// src/stores/authStore.ts
 
 import { defineStore } from "pinia"
 import { ref, computed } from "vue"
 import { authService, type UserInfo } from "../services/authService"
 import { ApiError, getErrorMessage } from "../utils/apiErrorHandler"
 
-export const useAuthStore = defineStore('auth', () => {
-  // State
+export const useAuthStore = defineStore("auth", () => {
   const user = ref<UserInfo | null>(null)
   const loading = ref(false)
-  const error = ref<string>('')
+  const error = ref<string>("")
   const isInitialized = ref(false)
 
-  // Computed
   const isAuthenticated = computed(() => {
     return authService.isAuthenticated() && !!user.value
   })
 
-  const isAdmin = computed(() => {
-    return user.value?.role === 'ADMIN'
-  })
+  const isAdmin = computed(() => user.value?.role === "ADMIN")
+  const isUser = computed(() => user.value?.role === "USER")
+  const userName = computed(() => user.value?.name || "Guest")
+  const userEmail = computed(() => user.value?.email || "")
 
-  const isUser = computed(() => {
-    return user.value?.role === 'USER'
-  })
-
-  const userName = computed(() => {
-    return user.value?.name || 'Guest'
-  })
-
-  const userEmail = computed(() => {
-    return user.value?.email || ''
-  })
-
-  // Actions
-
-  /**
-   * Initialisiere Auth State
-   * Rufe diese Funktion beim App-Start auf
-   */
   async function initializeAuth(): Promise<void> {
     if (isInitialized.value) return
 
     loading.value = true
-    error.value = ''
+    error.value = ""
 
     try {
-      // Prüfe ob User angemeldet ist und lade seine Daten
       if (authService.isAuthenticated()) {
         await loadUser()
       }
     } catch (err) {
-      console.error('Auth initialization failed:', err)
-      // Nicht kritisch - user wird zu Login geleitet
+      console.error("Auth initialization failed:", err)
     } finally {
       loading.value = false
       isInitialized.value = true
     }
   }
 
-  /**
-   * Lade aktuelle User-Informationen
-   */
   async function loadUser(): Promise<void> {
     try {
       user.value = await authService.getCurrentUser()
-      error.value = ''
+      error.value = ""
     } catch (err) {
       if (err instanceof ApiError) {
         error.value = getErrorMessage(err)
       } else {
-        error.value = 'Fehler beim Laden von User-Daten'
+        error.value = "Fehler beim Laden von User-Daten"
       }
-      // Bei 401: User ist nicht authentifiziert
       if (err instanceof ApiError && err.statusCode === 401) {
         user.value = null
       }
@@ -83,12 +55,9 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /**
-   * User anmelden
-   */
   async function login(email: string, password: string): Promise<UserInfo> {
     loading.value = true
-    error.value = ''
+    error.value = ""
 
     try {
       const response = await authService.login({ email, password })
@@ -98,7 +67,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (err instanceof ApiError) {
         error.value = getErrorMessage(err)
       } else {
-        error.value = 'Login fehlgeschlagen'
+        error.value = "Login fehlgeschlagen"
       }
       throw err
     } finally {
@@ -106,16 +75,13 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /**
-   * User registrieren
-   */
   async function register(
     email: string,
     password: string,
     name: string
   ): Promise<UserInfo> {
     loading.value = true
-    error.value = ''
+    error.value = ""
 
     try {
       const response = await authService.register({
@@ -129,7 +95,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (err instanceof ApiError) {
         error.value = getErrorMessage(err)
       } else {
-        error.value = 'Registrierung fehlgeschlagen'
+        error.value = "Registrierung fehlgeschlagen"
       }
       throw err
     } finally {
@@ -137,31 +103,24 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /**
-   * User abmelden
-   */
   async function logout(): Promise<void> {
     loading.value = true
-    error.value = ''
+    error.value = ""
 
     try {
       await authService.logout()
       user.value = null
     } catch (err) {
-      console.error('Logout error:', err)
-      // Trotzdem lokal clearen
+      console.error("Logout error:", err)
       user.value = null
     } finally {
       loading.value = false
     }
   }
 
-  /**
-   * Update User-Profil
-   */
   async function updateProfile(data: Partial<UserInfo>): Promise<void> {
     loading.value = true
-    error.value = ''
+    error.value = ""
 
     try {
       const updated = await authService.updateProfile(data)
@@ -170,7 +129,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (err instanceof ApiError) {
         error.value = getErrorMessage(err)
       } else {
-        error.value = 'Profil-Update fehlgeschlagen'
+        error.value = "Profil-Update fehlgeschlagen"
       }
       throw err
     } finally {
@@ -178,33 +137,24 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /**
-   * Lösche Error Message
-   */
   function clearError(): void {
-    error.value = ''
+    error.value = ""
   }
 
-  /**
-   * Setze User (für Testing)
-   */
   function setUser(userData: UserInfo | null): void {
     user.value = userData
   }
 
   return {
-    // State
     user,
     loading,
     error,
     isInitialized,
-    // Computed
     isAuthenticated,
     isAdmin,
     isUser,
     userName,
     userEmail,
-    // Actions
     initializeAuth,
     loadUser,
     login,

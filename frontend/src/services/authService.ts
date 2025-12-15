@@ -1,151 +1,217 @@
 /**
- * Auth Service
- * Behandelt Authentifizierung und Benutzer-Management
+ * Pinia Auth Store
+ * Zentraler State Management für Authentifizierung und User-Daten
  */
 
-import { postRequest, getRequest } from './api'
-import { tokenManager } from '../utils/tokenManager'
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import { authService, type UserInfo } from '../services/authService'
+import { ApiError, getErrorMessage } from '../utils/apiErrorHandler'
 
-export interface UserInfo {
-  id: string
-  email: string
-  name: string
-  role: 'ADMIN' | 'USER'
-  profileImageUrl?: string
-}
+export const useAuthStore = defineStore('auth', () => {
+  // State
+  const user = ref<UserInfo | null>(null)
+  const loading = ref(false)
+  const error = ref<string>('')
+  const isInitialized = ref(false)
 
-export interface AuthResponse {
-  accessToken: string
-  refreshToken: string
-  user: UserInfo
-}
+  // Computed
+  const isAuthenticated = computed(() => {
+    return authService.isAuthenticated() && !!user.value
+  })
 
-export interface LoginRequest {
-  email: string
-  password: string
-}
+  const isAdmin = computed(() => {
+    return user.value?.role === 'ADMIN'
+  })
 
-export interface RegisterRequest {
-  email: string
-  password: string
-  name: string
-}
+  const isUser = computed(() => {
+    return user.value?.role === 'USER'
+  })
 
-export const authService = {
-  /**
-   * Benutzer registrieren
-   */
-  async register(data: RegisterRequest): Promise<AuthResponse> {
-    try {
-      const response = await postRequest<AuthResponse>('/auth/register', data)
-      if (response && response.accessToken && response.refreshToken) {
-        tokenManager.setTokens(response.accessToken, response.refreshToken)
-      }
-      return response as AuthResponse
-    } catch (error) {
-      console.error('Registration error:', error)
-      throw error
-    }
-  },
+  const userName = computed(() => {
+    return user.value?.name || 'Guest'
+  })
+
+  const userEmail = computed(() => {
+    return user.value?.email || ''
+  })
+
+  // Actions
 
   /**
-   * Benutzer anmelden
+   * Initialisiere Auth State
+   * Rufe diese Funktion beim App-Start auf
    */
-  async login(data: LoginRequest): Promise<AuthResponse> {
-    try {
-      const response = await postRequest<AuthResponse>('/auth/login', data)
-      if (response && response.accessToken && response.refreshToken) {
-        tokenManager.setTokens(response.accessToken, response.refreshToken)
-      }
-      return response as AuthResponse
-    } catch (error) {
-      console.error('Login error:', error)
-      throw error
-    }
-  },
+  async function initializeAuth(): Promise<void> {
+    if (isInitialized.value) return
 
-  /**
-   * Benutzer abmelden
-   */
-  async logout(): Promise<void> {
+    loading.value = true
+    error.value = ''
+
     try {
-      const refreshToken = tokenManager.getRefreshToken()
-      if (refreshToken) {
-        await postRequest('/auth/logout', { refreshToken })
+      // Prüfe ob User angemeldet ist und lade seine Daten
+      if (authService.isAuthenticated()) {
+        await loadUser()
       }
-    } catch (error) {
-      console.error('Logout error:', error)
+    } catch (err) {
+      console.error('Auth initialization failed:', err)
+      // Nicht kritisch - user wird zu Login geleitet
     } finally {
-      tokenManager.clearTokens()
-    }
-  },
-
-  /**
-   * Prüfe ob Benutzer authentifiziert ist
-   */
-  isAuthenticated(): boolean {
-    return !!tokenManager.getAccessToken()
-  },
-
-  /**
-   * Aktuelle Benutzerinformationen abrufen
-   */
-  async getCurrentUser(): Promise<UserInfo> {
-    try {
-      const response = await getRequest<UserInfo>('/auth/me')
-      return response as UserInfo
-    } catch (error) {
-      console.error('Error fetching current user:', error)
-      throw error
-    }
-  },
-
-  /**
-   * Email-Verifikation
-   */
-  async verifyEmail(token: string): Promise<void> {
-    try {
-      await postRequest(`/auth/verify-email/${token}`, {})
-    } catch (error) {
-      console.error('Email verification error:', error)
-      throw error
-    }
-  },
-
-  /**
-   * Passwort-Reset anfordern
-   */
-  async requestPasswordReset(email: string): Promise<void> {
-    try {
-      await postRequest('/auth/forgot-password', { email })
-    } catch (error) {
-      console.error('Password reset request error:', error)
-      throw error
-    }
-  },
-
-  /**
-   * Passwort zurücksetzen
-   */
-  async resetPassword(token: string, newPassword: string): Promise<void> {
-    try {
-      await postRequest('/auth/reset-password', { token, newPassword })
-    } catch (error) {
-      console.error('Password reset error:', error)
-      throw error
-    }
-  },
-
-  /**
-   * Benutzerprofil aktualisieren
-   */
-  async updateProfile(data: Partial<UserInfo>): Promise<UserInfo> {
-    try {
-      const response = await postRequest<UserInfo>('/auth/profile', data)
-      return response as UserInfo
-    } catch (error) {
-      console.error('Profile update error:', error)
-      throw error
+      loading.value = false
+      isInitialized.value = true
     }
   }
-}
+
+  /**
+   * Lade aktuelle User-Informationen
+   */
+  async function loadUser(): Promise<void> {
+    try {
+      user.value = await authService.getCurrentUser()
+      error.value = ''
+    } catch (err) {
+      if (err instanceof ApiError) {
+        error.value = getErrorMessage(err)
+      } else {
+        error.value = 'Fehler beim Laden von User-Daten'
+      }
+      // Bei 401: User ist nicht authentifiziert
+      if (err instanceof ApiError && err.statusCode === 401) {
+        user.value = null
+      }
+      throw err
+    }
+  }
+
+  /**
+   * User anmelden
+   */
+  async function login(email: string, password: string): Promise<UserInfo> {
+    loading.value = true
+    error.value = ''
+
+    try {
+      const response = await authService.login({ email, password })
+      user.value = response.user
+      return response.user
+    } catch (err) {
+      if (err instanceof ApiError) {
+        error.value = getErrorMessage(err)
+      } else {
+        error.value = 'Login fehlgeschlagen'
+      }
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * User registrieren
+   */
+  async function register(
+    email: string,
+    password: string,
+    name: string
+  ): Promise<UserInfo> {
+    loading.value = true
+    error.value = ''
+
+    try {
+      const response = await authService.register({
+        email,
+        password,
+        name
+      })
+      user.value = response.user
+      return response.user
+    } catch (err) {
+      if (err instanceof ApiError) {
+        error.value = getErrorMessage(err)
+      } else {
+        error.value = 'Registrierung fehlgeschlagen'
+      }
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * User abmelden
+   */
+  async function logout(): Promise<void> {
+    loading.value = true
+    error.value = ''
+
+    try {
+      await authService.logout()
+      user.value = null
+    } catch (err) {
+      console.error('Logout error:', err)
+      // Trotzdem lokal clearen
+      user.value = null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Update User-Profil
+   */
+  async function updateProfile(data: Partial<UserInfo>): Promise<void> {
+    loading.value = true
+    error.value = ''
+
+    try {
+      const updated = await authService.updateProfile(data)
+      user.value = updated
+    } catch (err) {
+      if (err instanceof ApiError) {
+        error.value = getErrorMessage(err)
+      } else {
+        error.value = 'Profil-Update fehlgeschlagen'
+      }
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Lösche Error Message
+   */
+  function clearError(): void {
+    error.value = ''
+  }
+
+  /**
+   * Setze User (für Testing)
+   */
+  function setUser(userData: UserInfo | null): void {
+    user.value = userData
+  }
+
+  return {
+    // State
+    user,
+    loading,
+    error,
+    isInitialized,
+    // Computed
+    isAuthenticated,
+    isAdmin,
+    isUser,
+    userName,
+    userEmail,
+    // Actions
+    initializeAuth,
+    loadUser,
+    login,
+    register,
+    logout,
+    updateProfile,
+    clearError,
+    setUser
+  }
+})
