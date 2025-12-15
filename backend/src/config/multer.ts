@@ -2,13 +2,26 @@ import multer from 'multer';
 import path from 'path';
 import { env } from './env.js';
 import { v4 as uuidv4 } from 'uuid';
+import { mkdir } from 'fs/promises';
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadType = req.path.includes('profile-image')
-      ? 'profile-images'
-      : 'infoletter-images';
-    cb(null, path.join(env.UPLOAD_DIR, uploadType));
+  destination: async (req, file, cb) => {
+    try {
+      const uploadType = req.path.includes('profile-image')
+        ? 'profile-images'
+        : 'infoletter-images';
+      
+      const uploadDir = path.join(env.UPLOAD_DIR, uploadType);
+      
+      // Create directory if it doesn't exist
+      await mkdir(uploadDir, { recursive: true });
+      console.log(`✅ Upload directory ready: ${uploadDir}`);
+      
+      cb(null, uploadDir);
+    } catch (err: any) {
+      console.error('❌ Error creating upload directory:', err);
+      cb(err);
+    }
   },
   filename: (req, file, cb) => {
     const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
@@ -22,7 +35,7 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: multer.FileFilterCa
   if (allowedMimes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only JPEG, PNG, GIF, WEBP, and SVG are allowed.'));
+    cb(new Error(`Invalid file type. Only JPEG, PNG, GIF, WEBP, and SVG are allowed. Got: ${file.mimetype}`));
   }
 };
 
