@@ -1,7 +1,10 @@
 import { Request, Response } from 'express';
 import * as infoletterService from '../services/infoletterService.js';
 import { infoletterSchema, updateInfoletterSchema, collaboratorSchema } from '../utils/validators.js';
+import { sanitizeHTML, extractPlainText } from '../utils/htmlSanitizer.js';
 import type { CollaboratorRole } from '@prisma/client';
+import fs from 'fs/promises';
+import path from 'path';
 
 export const getInfoletters = async (req: Request, res: Response) => {
   try {
@@ -41,16 +44,21 @@ export const createInfoletter = async (req: Request, res: Response) => {
     }
 
     const { title, content } = infoletterSchema.parse(req.body);
+    
+    // Sanitize HTML content for security
+    const sanitizedContent = sanitizeHTML(content);
+
     const infoletter = await infoletterService.createInfoletter(
       req.user.userId,
       title,
-      content,
+      sanitizedContent,
       req.ip,
       req.get('user-agent')
     );
 
     res.status(201).json(infoletter);
   } catch (err: any) {
+    console.error('Error creating infoletter:', err);
     res.status(400).json({ error: err.message || 'Failed to create infoletter' });
   }
 };
@@ -64,11 +72,14 @@ export const updateInfoletter = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { title, content, status } = updateInfoletterSchema.parse(req.body);
 
+    // Sanitize HTML content for security
+    const sanitizedContent = sanitizeHTML(content);
+
     const infoletter = await infoletterService.updateInfoletter(
       id,
       req.user.userId,
       title,
-      content,
+      sanitizedContent,
       status,
       req.ip,
       req.get('user-agent')
@@ -79,6 +90,7 @@ export const updateInfoletter = async (req: Request, res: Response) => {
     if (err.message === 'Access denied') {
       return res.status(403).json({ error: 'Access denied' });
     }
+    console.error('Error updating infoletter:', err);
     res.status(400).json({ error: err.message || 'Failed to update infoletter' });
   }
 };
@@ -102,6 +114,7 @@ export const deleteInfoletter = async (req: Request, res: Response) => {
     if (err.message === 'Access denied') {
       return res.status(403).json({ error: 'Only owner can delete' });
     }
+    console.error('Error deleting infoletter:', err);
     res.status(400).json({ error: err.message || 'Failed to delete infoletter' });
   }
 };
@@ -129,6 +142,7 @@ export const addCollaborator = async (req: Request, res: Response) => {
     if (err.message === 'Access denied') {
       return res.status(403).json({ error: 'Only owner can add collaborators' });
     }
+    console.error('Error adding collaborator:', err);
     res.status(400).json({ error: err.message || 'Failed to add collaborator' });
   }
 };
@@ -154,6 +168,7 @@ export const removeCollaborator = async (req: Request, res: Response) => {
     if (err.message === 'Access denied') {
       return res.status(403).json({ error: 'Only owner can remove collaborators' });
     }
+    console.error('Error removing collaborator:', err);
     res.status(400).json({ error: err.message || 'Failed to remove collaborator' });
   }
 };
@@ -169,29 +184,38 @@ export const uploadImage = async (req: Request, res: Response) => {
     }
 
     const { infoletterId } = req.params;
-    const { filename, mimetype, size } = req.file;
+    const { filename, mimetype, size, path: filePath } = req.file;
 
-    // Get image dimensions (if available)
-    let width: number | undefined;
-    let height: number | undefined;
+    // Store relative path for database
+    const relativePath = `/uploads/infoletter-images/${path.basename(filePath)}`;
 
-    // For now, store basic info. Image dimension extraction would require additional library
     const image = await infoletterService.addImage(
       infoletterId,
       req.user.userId,
       filename,
-      req.file.path || `/uploads/${filename}`,
+      relativePath,
       mimetype,
-      size,
-      width,
-      height
+      size
     );
 
-    res.status(201).json(image);
+    res.status(201).json({
+      ...image,
+      url: relativePath, // Frontend kann damit direkt auf Bild zugreifen
+    });
   } catch (err: any) {
+    // Clean up uploaded file if error occurs
+    if (req.file?.path) {
+      try {
+        await fs.unlink(req.file.path);
+      } catch (e) {
+        console.error('Error deleting uploaded file:', e);
+      }
+    }
+
     if (err.message === 'Access denied') {
       return res.status(403).json({ error: 'Access denied' });
     }
+    console.error('Error uploading image:', err);
     res.status(400).json({ error: err.message || 'Failed to upload image' });
   }
 };
@@ -211,11 +235,22 @@ export const deleteImage = async (req: Request, res: Response) => {
       req.get('user-agent')
     );
 
+    // Try to delete file from disk
+    if (image.filepath) {
+      try {
+        const filePath = process.cwd() + '/public' + image.filepath;
+        await fs.unlink(filePath);
+      } catch (e) {
+        console.warn('Could not delete file from disk:', e);
+      }
+    }
+
     res.json({ message: 'Image deleted successfully', image });
   } catch (err: any) {
     if (err.message === 'Access denied') {
       return res.status(403).json({ error: 'Access denied' });
     }
+    console.error('Error deleting image:', err);
     res.status(400).json({ error: err.message || 'Failed to delete image' });
   }
 };
