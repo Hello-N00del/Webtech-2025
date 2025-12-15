@@ -1,217 +1,155 @@
 /**
- * Pinia Auth Store
- * Zentraler State Management für Authentifizierung und User-Daten
+ * Auth Service
+ * Behandelt alle authentifizierungsbezogenen API-Calls
  */
 
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { authService, type UserInfo } from '../services/authService'
-import { ApiError, getErrorMessage } from '../utils/apiErrorHandler'
+import { postRequest, getRequest } from './api'
+import { tokenManager } from '../utils/tokenManager'
 
-export const useAuthStore = defineStore('auth', () => {
-  // State
-  const user = ref<UserInfo | null>(null)
-  const loading = ref(false)
-  const error = ref<string>('')
-  const isInitialized = ref(false)
+export interface UserInfo {
+  id: string
+  email: string
+  name: string
+  role: 'USER' | 'ADMIN'
+  createdAt: string
+}
 
-  // Computed
-  const isAuthenticated = computed(() => {
-    return authService.isAuthenticated() && !!user.value
-  })
+export interface LoginRequest {
+  email: string
+  password: string
+}
 
-  const isAdmin = computed(() => {
-    return user.value?.role === 'ADMIN'
-  })
+export interface RegisterRequest {
+  email: string
+  password: string
+  name: string
+}
 
-  const isUser = computed(() => {
-    return user.value?.role === 'USER'
-  })
+export interface LoginResponse {
+  user: UserInfo
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+}
 
-  const userName = computed(() => {
-    return user.value?.name || 'Guest'
-  })
+export interface RegisterResponse {
+  user: UserInfo
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+}
 
-  const userEmail = computed(() => {
-    return user.value?.email || ''
-  })
-
-  // Actions
-
-  /**
-   * Initialisiere Auth State
-   * Rufe diese Funktion beim App-Start auf
-   */
-  async function initializeAuth(): Promise<void> {
-    if (isInitialized.value) return
-
-    loading.value = true
-    error.value = ''
-
-    try {
-      // Prüfe ob User angemeldet ist und lade seine Daten
-      if (authService.isAuthenticated()) {
-        await loadUser()
-      }
-    } catch (err) {
-      console.error('Auth initialization failed:', err)
-      // Nicht kritisch - user wird zu Login geleitet
-    } finally {
-      loading.value = false
-      isInitialized.value = true
-    }
-  }
-
-  /**
-   * Lade aktuelle User-Informationen
-   */
-  async function loadUser(): Promise<void> {
-    try {
-      user.value = await authService.getCurrentUser()
-      error.value = ''
-    } catch (err) {
-      if (err instanceof ApiError) {
-        error.value = getErrorMessage(err)
-      } else {
-        error.value = 'Fehler beim Laden von User-Daten'
-      }
-      // Bei 401: User ist nicht authentifiziert
-      if (err instanceof ApiError && err.statusCode === 401) {
-        user.value = null
-      }
-      throw err
-    }
-  }
-
+/**
+ * Auth Service Object
+ */
+export const authService = {
   /**
    * User anmelden
    */
-  async function login(email: string, password: string): Promise<UserInfo> {
-    loading.value = true
-    error.value = ''
-
+  async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {
-      const response = await authService.login({ email, password })
-      user.value = response.user
-      return response.user
-    } catch (err) {
-      if (err instanceof ApiError) {
-        error.value = getErrorMessage(err)
-      } else {
-        error.value = 'Login fehlgeschlagen'
+      const response = await postRequest<LoginResponse>('/auth/login', credentials)
+      
+      // Speichere Tokens
+      if (response.accessToken && response.refreshToken) {
+        tokenManager.setTokens(
+          response.accessToken,
+          response.refreshToken,
+          response.expiresIn
+        )
       }
-      throw err
-    } finally {
-      loading.value = false
+      
+      return response as LoginResponse
+    } catch (error) {
+      console.error('Login failed:', error)
+      throw error
     }
-  }
+  },
 
   /**
    * User registrieren
    */
-  async function register(
-    email: string,
-    password: string,
-    name: string
-  ): Promise<UserInfo> {
-    loading.value = true
-    error.value = ''
-
+  async register(data: RegisterRequest): Promise<RegisterResponse> {
     try {
-      const response = await authService.register({
-        email,
-        password,
-        name
-      })
-      user.value = response.user
-      return response.user
-    } catch (err) {
-      if (err instanceof ApiError) {
-        error.value = getErrorMessage(err)
-      } else {
-        error.value = 'Registrierung fehlgeschlagen'
+      const response = await postRequest<RegisterResponse>('/auth/register', data)
+      
+      // Speichere Tokens
+      if (response.accessToken && response.refreshToken) {
+        tokenManager.setTokens(
+          response.accessToken,
+          response.refreshToken,
+          response.expiresIn
+        )
       }
-      throw err
-    } finally {
-      loading.value = false
+      
+      return response as RegisterResponse
+    } catch (error) {
+      console.error('Registration failed:', error)
+      throw error
     }
-  }
+  },
 
   /**
    * User abmelden
    */
-  async function logout(): Promise<void> {
-    loading.value = true
-    error.value = ''
-
+  async logout(): Promise<void> {
     try {
-      await authService.logout()
-      user.value = null
-    } catch (err) {
-      console.error('Logout error:', err)
-      // Trotzdem lokal clearen
-      user.value = null
+      await postRequest('/auth/logout', {})
+    } catch (error) {
+      console.error('Logout failed:', error)
     } finally {
-      loading.value = false
+      // Immer lokale Tokens löschen
+      tokenManager.clearTokens()
     }
-  }
+  },
+
+  /**
+   * Hole aktuelle User-Informationen
+   */
+  async getCurrentUser(): Promise<UserInfo> {
+    try {
+      const response = await getRequest<UserInfo>('/auth/me')
+      return response as UserInfo
+    } catch (error) {
+      console.error('Get current user failed:', error)
+      throw error
+    }
+  },
 
   /**
    * Update User-Profil
    */
-  async function updateProfile(data: Partial<UserInfo>): Promise<void> {
-    loading.value = true
-    error.value = ''
-
+  async updateProfile(data: Partial<UserInfo>): Promise<UserInfo> {
     try {
-      const updated = await authService.updateProfile(data)
-      user.value = updated
-    } catch (err) {
-      if (err instanceof ApiError) {
-        error.value = getErrorMessage(err)
-      } else {
-        error.value = 'Profil-Update fehlgeschlagen'
-      }
-      throw err
-    } finally {
-      loading.value = false
+      const response = await postRequest<UserInfo>('/auth/profile', data)
+      return response as UserInfo
+    } catch (error) {
+      console.error('Update profile failed:', error)
+      throw error
     }
-  }
+  },
 
   /**
-   * Lösche Error Message
+   * Prüfe ob User authentifiziert ist
    */
-  function clearError(): void {
-    error.value = ''
-  }
+  isAuthenticated(): boolean {
+    return tokenManager.hasValidAccessToken()
+  },
 
   /**
-   * Setze User (für Testing)
+   * Hole Access Token
    */
-  function setUser(userData: UserInfo | null): void {
-    user.value = userData
-  }
+  getAccessToken(): string | null {
+    return tokenManager.getAccessToken()
+  },
 
-  return {
-    // State
-    user,
-    loading,
-    error,
-    isInitialized,
-    // Computed
-    isAuthenticated,
-    isAdmin,
-    isUser,
-    userName,
-    userEmail,
-    // Actions
-    initializeAuth,
-    loadUser,
-    login,
-    register,
-    logout,
-    updateProfile,
-    clearError,
-    setUser
+  /**
+   * Hole Refresh Token
+   */
+  getRefreshToken(): string | null {
+    return tokenManager.getRefreshToken()
   }
-})
+}
+
+// Default Export (falls irgendwo import authService from '...' verwendet wird)
+export default authService
