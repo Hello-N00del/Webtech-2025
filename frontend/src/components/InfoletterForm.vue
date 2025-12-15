@@ -27,18 +27,146 @@
         <p v-if="errors.title" class="text-red-600 text-sm mt-1">{{ errors.title }}</p>
       </div>
 
-      <!-- Content Field -->
+      <!-- Image Upload Section -->
+      <div v-if="isEditing" class="space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-900 mb-2">
+            Bilder
+          </label>
+          <div class="space-y-3">
+            <!-- Upload Input -->
+            <div class="flex gap-2">
+              <input
+                ref="imageInput"
+                type="file"
+                accept="image/*"
+                @change="handleImageSelect"
+                class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+              <button
+                type="button"
+                @click="uploadImage"
+                :disabled="!selectedImage || uploading"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span v-if="uploading">Lädt...</span>
+                <span v-else>Hochladen</span>
+              </button>
+            </div>
+
+            <!-- Image Gallery -->
+            <div v-if="images.length > 0" class="grid grid-cols-3 gap-3">
+              <div
+                v-for="image in images"
+                :key="image.id"
+                class="relative group"
+              >
+                <img
+                  :src="image.url"
+                  :alt="image.filename"
+                  class="w-full h-24 object-cover rounded-lg border border-slate-200"
+                />
+                <button
+                  type="button"
+                  @click="removeImage(image.id)"
+                  class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+                >
+                  ✕
+                </button>
+                <p class="text-xs text-slate-600 mt-1 truncate">{{ image.filename }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rich-Text Editor Section -->
       <div>
         <label class="block text-sm font-semibold text-slate-900 mb-2">
           Inhalt *
         </label>
-        <textarea
-          v-model="form.content"
-          placeholder="Schreibe deinen Newsletter-Inhalt hier..."
-          rows="10"
-          class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm"
-          required
-        ></textarea>
+        <div v-if="editor" class="border border-slate-300 rounded-lg overflow-hidden">
+          <!-- Toolbar -->
+          <div class="flex flex-wrap gap-1 bg-slate-100 border-b border-slate-300 p-2">
+            <!-- Text Format Buttons -->
+            <button
+              type="button"
+              @click="editor.chain().focus().toggleBold().run()"
+              :class="['px-3 py-1 rounded text-sm font-medium transition', editor.isActive('bold') ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300 hover:bg-slate-50']"
+              title="Bold (Ctrl+B)"
+            >
+              <strong>B</strong>
+            </button>
+            <button
+              type="button"
+              @click="editor.chain().focus().toggleItalic().run()"
+              :class="['px-3 py-1 rounded text-sm font-medium transition', editor.isActive('italic') ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300 hover:bg-slate-50']"
+              title="Italic (Ctrl+I)"
+            >
+              <em>I</em>
+            </button>
+            <button
+              type="button"
+              @click="editor.chain().focus().toggleUnderline().run()"
+              :class="['px-3 py-1 rounded text-sm font-medium transition', editor.isActive('underline') ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300 hover:bg-slate-50']"
+              title="Underline (Ctrl+U)"
+            >
+              <u>U</u>
+            </button>
+            <div class="border-l border-slate-300 mx-1"></div>
+
+            <!-- Heading Buttons -->
+            <button
+              type="button"
+              @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
+              :class="['px-3 py-1 rounded text-sm font-medium transition', editor.isActive('heading', { level: 1 }) ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300 hover:bg-slate-50']"
+              title="Heading 1"
+            >
+              H1
+            </button>
+            <button
+              type="button"
+              @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+              :class="['px-3 py-1 rounded text-sm font-medium transition', editor.isActive('heading', { level: 2 }) ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300 hover:bg-slate-50']"
+              title="Heading 2"
+            >
+              H2
+            </button>
+            <div class="border-l border-slate-300 mx-1"></div>
+
+            <!-- List Buttons -->
+            <button
+              type="button"
+              @click="editor.chain().focus().toggleBulletList().run()"
+              :class="['px-3 py-1 rounded text-sm font-medium transition', editor.isActive('bulletList') ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300 hover:bg-slate-50']"
+              title="Bullet List"
+            >
+              •
+            </button>
+            <button
+              type="button"
+              @click="editor.chain().focus().toggleOrderedList().run()"
+              :class="['px-3 py-1 rounded text-sm font-medium transition', editor.isActive('orderedList') ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-300 hover:bg-slate-50']"
+              title="Ordered List"
+            >
+              1.
+            </button>
+            <div class="border-l border-slate-300 mx-1"></div>
+
+            <!-- Clear Button -->
+            <button
+              type="button"
+              @click="editor.chain().focus().clearNodes().run()"
+              class="px-3 py-1 rounded text-sm font-medium bg-white border border-slate-300 hover:bg-slate-50 transition"
+              title="Clear Formatting"
+            >
+              Clear
+            </button>
+          </div>
+
+          <!-- Editor -->
+          <EditorContent :editor="editor" class="prose prose-sm max-w-none p-4 min-h-96 focus:outline-none" />
+        </div>
         <p v-if="errors.content" class="text-red-600 text-sm mt-1">{{ errors.content }}</p>
       </div>
 
@@ -128,29 +256,7 @@
           <!-- Add Collaborator Form -->
           <div class="border-t pt-4 mt-4">
             <h4 class="font-semibold text-slate-900 mb-3">Mitarbeiter hinzufügen</h4>
-            <div class="flex gap-2">
-              <input
-                v-model="newCollaborator.email"
-                type="email"
-                placeholder="Email des Mitarbeiters"
-                class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <select
-                v-model="newCollaborator.role"
-                class="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="EDITOR">Editor</option>
-                <option value="VIEWER">Betrachter</option>
-              </select>
-              <button
-                @click="addCollaborator"
-                type="button"
-                :disabled="!newCollaborator.email"
-                class="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-              >
-                Hinzufügen
-              </button>
-            </div>
+            <p class="text-sm text-slate-600 mb-3">📝 Hinweis: User-Lookup nach Email ist noch nicht implementiert. Bitte verwende für Tests direkt die User-IDs.</p>
           </div>
         </div>
       </div>
@@ -161,6 +267,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useEditor, EditorContent } from '@tiptap/vue-3'
+import StarterKit from '@tiptap/starter-kit'
+import Underline from '@tiptap/extension-underline'
 import { infoletterService } from '../services/infoletterService'
 
 const router = useRouter()
@@ -178,9 +287,21 @@ const errors = ref<Record<string, string>>({})
 const loading = ref(false)
 const error = ref('')
 const collaborators = ref<any[]>([])
-const newCollaborator = ref({
-  email: '',
-  role: 'EDITOR'
+const images = ref<any[]>([])
+const selectedImage = ref<File | null>(null)
+const uploading = ref(false)
+const imageInput = ref<HTMLInputElement>()
+
+// Initialize TipTap Editor
+const editor = useEditor({
+  extensions: [
+    StarterKit,
+    Underline
+  ],
+  content: form.value.content,
+  onUpdate: ({ editor }) => {
+    form.value.content = editor.getHTML()
+  }
 })
 
 const loadInfoletter = async () => {
@@ -194,6 +315,12 @@ const loadInfoletter = async () => {
       status: infoletter.status
     }
     collaborators.value = infoletter.collaborators || []
+    images.value = infoletter.images || []
+    
+    // Update editor content
+    if (editor) {
+      editor.commands.setContent(infoletter.content)
+    }
   } catch (err: any) {
     error.value = 'Fehler beim Laden des Infoletters'
     console.error('Error loading infoletter:', err)
@@ -236,20 +363,44 @@ const handleSubmit = async () => {
   }
 }
 
-const addCollaborator = async () => {
-  if (!newCollaborator.value.email || !isEditing.value || !route.params.id) return
+const handleImageSelect = (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (file) {
+    selectedImage.value = file
+  }
+}
+
+const uploadImage = async () => {
+  if (!selectedImage.value || !isEditing.value || !route.params.id) return
+
+  uploading.value = true
+  try {
+    const response = await infoletterService.uploadImage(
+      route.params.id as string,
+      selectedImage.value
+    )
+    images.value.push(response)
+    selectedImage.value = null
+    if (imageInput.value) {
+      imageInput.value.value = ''
+    }
+  } catch (err: any) {
+    error.value = 'Fehler beim Hochladen des Bildes'
+    console.error('Error uploading image:', err)
+  } finally {
+    uploading.value = false
+  }
+}
+
+const removeImage = async (imageId: string) => {
+  if (!confirm('Bist du sicher?')) return
 
   try {
-    // Note: Backend expects userId, not email. This is a simplified version.
-    // In production, you'd need to look up the user ID from email first
-    // await infoletterService.addCollaborator(
-    //   route.params.id as string,
-    //   userId,
-    //   newCollaborator.value.role
-    // )
-    console.warn('Collaborator feature requires user lookup - not fully implemented')
+    await infoletterService.deleteImage(imageId)
+    images.value = images.value.filter(i => i.id !== imageId)
   } catch (err: any) {
-    error.value = err.message || 'Fehler beim Hinzufügen des Mitarbeiters'
+    error.value = 'Fehler beim Löschen des Bildes'
+    console.error('Error deleting image:', err)
   }
 }
 
@@ -268,3 +419,33 @@ onMounted(() => {
   loadInfoletter()
 })
 </script>
+
+<style scoped>
+:deep(.ProseMirror) {
+  @apply focus:outline-none;
+}
+
+:deep(.ProseMirror p) {
+  @apply my-2;
+}
+
+:deep(.ProseMirror h1) {
+  @apply text-2xl font-bold my-2;
+}
+
+:deep(.ProseMirror h2) {
+  @apply text-xl font-bold my-2;
+}
+
+:deep(.ProseMirror ul) {
+  @apply list-disc list-inside my-2;
+}
+
+:deep(.ProseMirror ol) {
+  @apply list-decimal list-inside my-2;
+}
+
+:deep(.ProseMirror blockquote) {
+  @apply border-l-4 border-indigo-500 pl-4 italic my-2;
+}
+</style>
