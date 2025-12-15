@@ -51,11 +51,11 @@ export const authService = {
       const response = await postRequest<LoginResponse>('/auth/login', credentials)
       
       // Speichere Tokens
-      if (response.accessToken && response.refreshToken) {
+      if (response && 'accessToken' in response && 'refreshToken' in response) {
         tokenManager.setTokens(
           response.accessToken,
           response.refreshToken,
-          response.expiresIn
+          response.expiresIn || 3600
         )
       }
       
@@ -73,13 +73,16 @@ export const authService = {
     try {
       const response = await postRequest<RegisterResponse>('/auth/register', data)
       
-      // Speichere Tokens
-      if (response.accessToken && response.refreshToken) {
+      // ✅ Stelle sicher dass Response richtig verarbeitet wird
+      if (response && 'accessToken' in response && 'refreshToken' in response) {
         tokenManager.setTokens(
           response.accessToken,
           response.refreshToken,
-          response.expiresIn
+          response.expiresIn || 3600
         )
+      } else {
+        console.warn('Register response missing tokens:', response)
+        throw new Error('Invalid registration response: missing tokens')
       }
       
       return response as RegisterResponse
