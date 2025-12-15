@@ -67,22 +67,29 @@ export const infoletterService = {
   },
 
   /**
-   * ✅ Einzelnen Infoletter abrufen - PUBLIC VERSION
-   * Verwendet public API endpoint (OHNE Auth) für public views
-   * Falls die View URL ein /view enthält, nutze public API
+   * ✅ Einzelnen PUBLISHED Infoletter abrufen (public view)
+   * OHNE Auth - für /infoletter/:id/view route
+   */
+  async getPublishedById(id: string): Promise<Infoletter> {
+    try {
+      console.log(`📄 Fetching published infoletter (public): ${id}`)
+      const response = await getPublicRequest<Infoletter>(`/infoletters/public/${id}`)
+      console.log('📄 Loaded published infoletter:', response)
+      return response as Infoletter
+    } catch (error) {
+      console.error('❌ Error fetching published infoletter:', error)
+      throw error
+    }
+  },
+
+  /**
+   * Einzelnen Infoletter abrufen - AUTHENTICATED VERSION
+   * Mit Auth - für /infoletter/:id/edit route
    */
   async getById(id: string): Promise<Infoletter> {
     try {
-      // Check if we're in a public view context
-      const isPublicView = typeof window !== 'undefined' && window.location.pathname.includes('/view')
-      
-      console.log(`📄 Fetching infoletter (ID: ${id}, public: ${isPublicView})...`)
-      
-      // Use public API for public views, regular API for authenticated views
-      const response = isPublicView
-        ? await getPublicRequest<Infoletter>(`/infoletters/public/${id}`)
-        : await getRequest<Infoletter>(`/infoletters/${id}`)
-      
+      console.log(`📄 Fetching infoletter (authenticated): ${id}`)
+      const response = await getRequest<Infoletter>(`/infoletters/${id}`)
       console.log('📄 Loaded infoletter:', response)
       return response as Infoletter
     } catch (error) {
