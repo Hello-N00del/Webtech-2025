@@ -1,11 +1,50 @@
-import type { Infoletter } from '../models/infoletter';
+import { Infoletter } from '../models/types';
 
-// Dummy (Mock) Funktionen, später mit API Calls ersetzen
-export function fetchInfoletters(): Promise<Infoletter[]> {
-  // Hier könnte per fetch/axios aktuelle Infoletter geladen werden
-  return Promise.resolve([]);
-}
+// Service für Infoletter-Operationen
+export const infoletterService = {
+  // Mock-Daten abrufen
+  getInfoletters: async (): Promise<Infoletter[]> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([]);
+      }, 300);
+    });
+  },
 
-export function createInfoletter(data: Infoletter): Promise<Infoletter> {
-  return Promise.resolve(data);
-}
+  // Neuen Infoletter erstellen
+  createInfoletter: async (
+    title: string,
+    content: string,
+    author: string,
+    authorId: string
+  ): Promise<Infoletter> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const newInfoletter: Infoletter = {
+          id: Date.now().toString(),
+          title,
+          content,
+          author,
+          authorId,
+          createdAt: new Date(),
+          likes: 0
+        };
+        resolve(newInfoletter);
+      }, 300);
+    });
+  },
+
+  // Infoletter liken
+  likeInfoletter: async (id: string): Promise<void> => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 200);
+    });
+  },
+
+  // Validierung
+  validateInfoletter: (title: string, content: string): boolean => {
+    return title.trim().length > 0 && content.trim().length > 0;
+  }
+};
