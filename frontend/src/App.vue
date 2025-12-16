@@ -86,12 +86,27 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useAuthStore } from './stores/authStore'
 import { useRouter, useRoute } from 'vue-router'
 
 const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
+
+// ✅ Initialize auth on app load
+onMounted(async () => {
+  console.log('🔓 App mounted, initializing auth...')
+  try {
+    await authStore.initializeAuth()
+    console.log('✅ Auth initialized')
+    console.log('  - isInitialized:', authStore.isInitialized)
+    console.log('  - isAuthenticated:', authStore.isAuthenticated)
+    console.log('  - user:', authStore.user ? authStore.user.name : 'null')
+  } catch (err) {
+    console.error('❌ Auth initialization error:', err)
+  }
+})
 
 const handleLogout = async () => {
   try {
