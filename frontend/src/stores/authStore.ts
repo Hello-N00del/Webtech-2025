@@ -1,4 +1,17 @@
 // src/stores/authStore.ts
+// ✨ TECHNOLOGY: Pinia Store
+// Why Pinia?
+// - Official Vue 3 State Management (successor to Vuex)
+// - Composition API support out of the box
+// - Better TypeScript integration with auto-generated types
+// - Simpler, more intuitive API than Vuex
+// - Smaller bundle size (~2KB)
+//
+// Why useAuthStore with Composition API?
+// - Direct ref/computed usage (not nested in modules)
+// - Easier to understand and debug
+// - Better code splitting
+// - Type safety without complex configuration
 
 import { defineStore } from "pinia"
 import { ref, computed } from "vue"
@@ -11,9 +24,18 @@ export const useAuthStore = defineStore("auth", () => {
   const error = ref<string>("")
   const isInitialized = ref(false)
 
-  // ✅ FIXED: Check both user AND token for immediate reactivity
-  // User is set immediately after login in authStore.login()
-  // This is much more reactive than just checking the token
+  // ✨ REACTIVITY PATTERN: Computed Property with Multiple Checks
+  // Why check both user.value AND authService.isAuthenticated()?
+  // 1. user.value is a ref - Vue tracks changes immediately
+  // 2. authService.isAuthenticated() validates token in localStorage
+  // 3. Double-check pattern = more robust authentication
+  // 4. Header updates instantly when user.value changes (reactive!)
+  //
+  // Example flow:
+  // - User logs in → authStore.user = response.user (reactive!)
+  // - tokenManager.setTokens() (localStorage updated)
+  // - isAuthenticated computed property checks: !!user.value → true
+  // - Vue detects change → triggers re-render → header updates INSTANTLY
   const isAuthenticated = computed(() => {
     return !!user.value && authService.isAuthenticated()
   })
@@ -58,15 +80,18 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
-  // ✅ LOGIN - Optimiert für Performance
+  // ✨ LOGIN - Optimiert für Performance
+  // Direct state update instead of complex watch/computed logic
+  // Why? Simple, predictable, debuggable
   async function login(email: string, password: string): Promise<UserInfo> {
     loading.value = true
     error.value = ""
 
     try {
-      // Login API gibt User-Daten direkt zurück
       const response = await authService.login({ email, password })
-      // Speichere User-Daten sofort (kein Extra-Request nötig!)
+      // 🔑 CRITICAL: Set user immediately (reactive!)
+      // This makes isAuthenticated computed property return true
+      // which triggers header re-render instantly
       user.value = response.user
       return response.user
     } catch (err) {
@@ -81,20 +106,18 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
-  // ✅ LOGOUT - Optimiert für Performance
+  // ✨ LOGOUT - Optimiert für Performance
   async function logout(): Promise<void> {
     loading.value = true
     error.value = ""
 
     try {
-      // Logout API-Call ist optional (Token wird sowieso gelöscht)
-      // Aber wir versuchen es trotzdem (non-blocking)
       await authService.logout()
     } catch (err) {
-      // Logout-Fehler können ignoriert werden
       console.warn("Logout API error (ignored):", err)
     } finally {
-      // IMMER lokale Daten löschen - egal ob API-Call erfolgreich war
+      // 🔑 CRITICAL: Always clear local state
+      // Even if API fails, user is logged out locally
       user.value = null
       loading.value = false
     }
