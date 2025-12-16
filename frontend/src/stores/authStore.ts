@@ -11,9 +11,11 @@ export const useAuthStore = defineStore("auth", () => {
   const error = ref<string>("")
   const isInitialized = ref(false)
 
-  // ✅ FIX: isAuthenticated prüft nur Token, nicht User-Daten
+  // ✅ FIXED: Check both user AND token for immediate reactivity
+  // User is set immediately after login in authStore.login()
+  // This is much more reactive than just checking the token
   const isAuthenticated = computed(() => {
-    return authService.isAuthenticated()
+    return !!user.value && authService.isAuthenticated()
   })
 
   const isAdmin = computed(() => user.value?.role === "ADMIN")
