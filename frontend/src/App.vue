@@ -1,6 +1,28 @@
+<!-- 
+  App.vue - Root Component
+  
+  🏗️ ARCHITECTURE: Global Header Strategy
+  Why ONE header in App.vue instead of separate headers per page?
+  - Single Source of Truth → consistency everywhere
+  - Reactive state changes update instantly across all pages
+  - No header duplication or logic conflicts
+  - Easier to maintain and debug
+  - Better performance (fewer re-renders)
+  
+  Flow:
+  1. App.vue mounts → initializes auth
+  2. authStore.isAuthenticated is reactive Computed Property
+  3. Header reactively updates based on auth state
+  4. ALL pages share the same header (no duplicates!)
+-->
+
 <template>
   <div class="min-h-screen bg-slate-50">
-    <!-- Loading State -->
+    <!-- 
+      Loading State
+      Waits for authStore.isInitialized to be true
+      This ensures token is loaded from localStorage before rendering
+    -->
     <div v-if="!authStore.isInitialized" class="min-h-screen flex items-center justify-center">
       <div class="text-center">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -8,9 +30,20 @@
       </div>
     </div>
 
-    <!-- App Content -->
+    <!-- App Content (only show when initialized) -->
     <template v-else>
-      <!-- ✅ GLOBAL HEADER - On ALL pages -->
+      <!-- 
+        🔗 GLOBAL HEADER - On ALL pages
+        
+        Why sticky + z-40?
+        - Sticky: stays on top when scrolling
+        - z-40: always above other content
+        
+        Why check authStore.isAuthenticated?
+        - Computed Property that reactively updates
+        - When user logs in → immediately shows Dashboard/Logout buttons
+        - When user logs out → immediately shows Login button
+      -->
       <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <div class="flex items-center justify-between">
@@ -37,7 +70,10 @@
                 <span class="hidden md:inline">Newsletter</span>
               </router-link>
 
-              <!-- Authenticated Navigation -->
+              <!-- 
+                Authenticated Navigation
+                Shows ONLY when authStore.isAuthenticated is true
+              -->
               <template v-if="authStore.isAuthenticated">
                 <!-- Dashboard Link -->
                 <router-link
@@ -59,7 +95,10 @@
                 </button>
               </template>
 
-              <!-- Unauthenticated Navigation -->
+              <!-- 
+                Unauthenticated Navigation
+                Shows ONLY when authStore.isAuthenticated is false
+              -->
               <template v-else>
                 <!-- Login Button -->
                 <router-link
@@ -78,6 +117,7 @@
       <!-- Page Content -->
       <main class="py-10">
         <div class="max-w-7xl mx-auto px-4 md:px-6">
+          <!-- 📀 Route Views -->
           <router-view />
         </div>
       </main>
@@ -86,7 +126,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+// ✨ TECHNOLOGIES USED:
+// - Vue 3 Composition API (script setup syntax)
+// - TypeScript (type safety)
+// - Vue Router (useRouter, useRoute composables)
+// - Pinia (useAuthStore)
+
 import { useAuthStore } from './stores/authStore'
 import { useRouter, useRoute } from 'vue-router'
 
@@ -94,20 +139,13 @@ const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 
-// ✅ Initialize auth on app load
-onMounted(async () => {
-  console.log('🔓 App mounted, initializing auth...')
-  try {
-    await authStore.initializeAuth()
-    console.log('✅ Auth initialized')
-    console.log('  - isInitialized:', authStore.isInitialized)
-    console.log('  - isAuthenticated:', authStore.isAuthenticated)
-    console.log('  - user:', authStore.user ? authStore.user.name : 'null')
-  } catch (err) {
-    console.error('❌ Auth initialization error:', err)
-  }
-})
-
+// 🔑 Logout Handler
+// Calls authStore.logout() which:
+// 1. Calls API to invalidate token on backend
+// 2. Clears localStorage tokens
+// 3. Sets authStore.user = null (reactive!)
+// 4. isAuthenticated computed property becomes false
+// 5. Header re-renders immediately
 const handleLogout = async () => {
   try {
     console.log('🚪 Logging out...')
