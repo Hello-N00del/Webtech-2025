@@ -6,35 +6,28 @@ Vue 3 + TypeScript Frontend für das Infoletter Management System.
 
 ## 🏗️ Projektstruktur
 
+```
 frontend/
-
-├── public/ # Statische Assets
-
+├── public/                 # Statische Assets
 ├── src/
-
-│ ├── assets/ # Bilder, Styles, Icons
-
-│ ├── components/ # Vue-Komponenten
-
-│ ├── models/ # TypeScript Interfaces
-
-│ ├── router/ # Vue Router Konfiguration
-
-│ ├── services/ # API-Services
-
-│ ├── stores/ # Pinia State Management
-
-│ ├── views/ # Page-Komponenten
-
-│ ├── App.vue # Root-Komponente
-
-│ └── main.ts # App Entry Point
-
+│   ├── assets/            # Bilder, Styles, Icons
+│   ├── components/        # Vue-Komponenten (UI)
+│   ├── composables/       # Vue Composables (useAuth, useRouterGuards, etc.)
+│   ├── models/            # TypeScript Interfaces & Types
+│   ├── router/            # Vue Router Konfiguration & Guards
+│   ├── services/          # API-Services (authService, api.ts)
+│   ├── stores/            # Pinia State Management (authStore)
+│   ├── types/             # Global TypeScript Types
+│   ├── utils/             # Hilfsfunktionen (apiErrorHandler, tokenManager)
+│   ├── views/             # Page-Komponenten (LoginView, DashboardView)
+│   ├── App.vue            # Root-Komponente (Global Header)
+│   ├── main.ts            # App Entry Point (Auth Initialization)
+│   └── style.css          # Global Styles + CSS Variables
 ├── package.json
-
 ├── tsconfig.json
-
-└── vite.config.ts
+├── vite.config.ts
+└── README.md
+```
 
 ---
 
@@ -44,191 +37,442 @@ Siehe [Haupt-README](../README.md) für vollständige Installationsanleitung.
 
 ### Schnellstart
 
-Im frontend Ordner
+```bash
+# Dependencies installieren
 npm install
 
-Development Server starten
+# Development Server starten (Hot Module Reload)
 npm run dev
+```
 
-Frontend läuft auf [http://localhost:5173/public/](http://localhost:5173/public/)
+✅ Frontend läuft auf [http://localhost:5173/](http://localhost:5173/)
 
 ---
 
-## 🛠️ Technologie-Stack
+## 🛠️ Technologie-Stack & Warum?
 
-- **Vue 3** – Composition API mit `<script setup>`
-- **TypeScript** – Typsicherheit
-- **Pinia** – State Management
-- **Vue Router** – Client-Side Routing
-- **Vite** – Build Tool & Dev Server
-- **Axios** 🚧 – HTTP Client (geplant)
+### **Vue 3 + Composition API**
+> **Warum Vue 3?** Progressive JavaScript Framework mit reaktiven Komponenten. Composition API erlaubt flexible, wiederverwendbare Logik ohne tiefe Verschachtelung. Perfekt für komplexe State-Management.
+
+```typescript
+// ✅ Composition API mit <script setup>
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+
+const count = ref(0)
+const doubled = computed(() => count.value * 2)
+</script>
+```
+
+### **TypeScript**
+> **Warum TypeScript?** Compile-time Type-Checking verhindert Runtime-Fehler. Auto-completion in IDEs. Bessere Code-Dokumentation. Auch Refactoring wird sicherer.
+
+```typescript
+// ✅ Type-Safe Code
+interface User {
+  id: string
+  email: string
+  name: string
+}
+
+const user: User = { /* ... */ }
+```
+
+### **Pinia State Management**
+> **Warum Pinia statt Vuex?** Offizielle Vue 3 Empfehlung. Simpler & intuitiver. Bessere TypeScript-Unterstützung mit auto-generated Types. Composition API First.
+
+```typescript
+// ✅ src/stores/authStore.ts - Reaktives State Management
+export const useAuthStore = defineStore('auth', () => {
+  const user = ref<UserInfo | null>(null)
+  
+  // Computed Property - reaktiv auf user.value Änderungen
+  const isAuthenticated = computed(() => {
+    return !!user.value && authService.isAuthenticated()
+  })
+  
+  return { user, isAuthenticated, login, logout }
+})
+```
+
+**Key Advantage:** Wenn `user.value` ändert → `isAuthenticated` wird sofort neu berechnet → Vue re-rendert die UI → Header updated INSTANT!
+
+### **Vue Router**
+> **Warum Vue Router?** Offizielle Single-Page-Application (SPA) Routing-Lösung. Client-Side Navigation ohne Page-Reload. Lazy-Loaded Routes für bessere Performance.
+
+```typescript
+// ✅ src/router/index.ts - Navigation Guards für Auth-Prüfung
+router.beforeEach(async (to, from, next) => {
+  // 10ms Delay gibt Pinia Zeit zu aktualisieren
+  await new Promise(resolve => setTimeout(resolve, 10))
+  
+  const authStore = useAuthStore()
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next('/login')
+  } else {
+    next()
+  }
+})
+```
+
+### **Vite Build Tool**
+> **Warum Vite?** Blitzschnelle Dev Server (Native ESM). Sofortiges Hot Module Replacement (HMR). Schnellere Builds durch esbuild. Moderne JavaScript Support.
+
+```bash
+# ✅ Sofortiger Dev Server (~100ms startup)
+npm run dev
+
+# ✅ Optimierter Production Build
+npm run build
+```
+
+### **Tailwind CSS**
+> **Warum Tailwind?** Utility-First CSS Framework. Konsistentes Design über CSS-Variablen. Responsive Design out-of-the-box. Dark Mode Support.
+
+```html
+<!-- ✅ Utility-First Styling -->
+<button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+  Click me
+</button>
+```
+
+### **Axios HTTP Client**
+> **Warum Axios?** Intuitives API. Request/Response Interceptors für Auth-Tokens. Automatic JSON Serialization. Better Error Handling.
+
+```typescript
+// ✅ src/services/api.ts - Automatischer Token-Refresh
+api.interceptors.request.use((config) => {
+  const token = tokenManager.getAccessToken()
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
+api.interceptors.response.use(...handleTokenRefresh)
+```
 
 ---
 
 ## 📦 Verfügbare Scripts
 
-Development
-npm run dev # Dev-Server mit Hot-Reload
+```bash
+# Development
+npm run dev          # Dev-Server mit Hot-Reload
 
-Build
-npm run build # Production Build
-npm run preview # Preview des Production Builds
+# Build
+npm run build        # Production Build
+npm run preview      # Preview des Production Builds
 
-Linting & Formatting
-npm run lint # ESLint prüfen
-npm run format # Prettier formatieren
+# Linting & Formatting
+npm run lint         # ESLint prüfen
+npm run format       # Prettier formatieren
 
-Type Checking
-npm run type-check # TypeScript Typen prüfen
-
----
-
-## 🧩 Komponenten-Struktur
-
-### Models (TypeScript Interfaces)
-
-// src/models/User.ts
-export interface User {
-id: string;
-email: string;
-name: string;
-role: 'ADMIN' | 'USER';
-profileImageUrl?: string;
-}
-
-// src/models/Infoletter.ts
-export interface Infoletter {
-id: string;
-ownerId: string;
-title: string;
-content: string;
-status: 'DRAFT' | 'PUBLISHED';
-createdAt: string;
-updatedAt: string;
-}
-
-### Services (API-Integration)
-
-// src/services/authService.ts
-export const authService = {
-register(data: RegisterData) { /* ... / },
-login(credentials: LoginCredentials) { / ... / },
-logout() { / ... */ }
-}
-
-### Stores (Pinia)
-
-// src/stores/authStore.ts
-export const useAuthStore = defineStore('auth', () => {
-const user = ref<User | null>(null)
-const isAuthenticated = computed(() => !!user.value)
-
-function login(credentials: LoginCredentials) { /* ... / }
-function logout() { / ... */ }
-
-return { user, isAuthenticated, login, logout }
-})
+# Type Checking
+npm run type-check   # TypeScript Typen prüfen
+```
 
 ---
 
-## 🎨 Styling
+## 🎨 Styling & Design System
 
-### CSS-Variablen
+### **Global CSS Variables** (src/style.css)
 
-Globale Design-Tokens in `src/assets/main.css`:
-
+```css
+/* ✅ Design System in CSS-Variablen */
 :root {
---color-primary: #42b883;
---color-text: #2c3e50;
---font-family: 'Inter', sans-serif;
+  /* Farben */
+  --color-primary: var(--color-teal-500);
+  --color-text: var(--color-slate-900);
+  --color-background: var(--color-cream-50);
+  
+  /* Spacing */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-16: 16px;
+  
+  /* Border Radius */
+  --radius-base: 8px;
+  --radius-lg: 12px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
 }
+```
 
-### Scoped Styles
+### **Responsive Design**
 
-<style scoped> /* Komponenten-spezifische Styles */ .button { background: var(--color-primary); } </style>
+```vue
+<!-- ✅ Mobile-First mit Tailwind -->
+<div class="px-4 md:px-6 lg:px-8">
+  <button class="text-sm md:text-base lg:text-lg">
+    Responsive Button
+  </button>
+</div>
+```
+
+---
+
+## 🧩 Komponenten & Patterns
+
+### **Composition API Pattern**
+
+```vue
+<script setup lang="ts">
+// 1️⃣ Imports
+import { ref, computed } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
+import type { User } from '@/models/User'
+
+// 2️⃣ Props & Emits
+interface Props {
+  user: User
+}
+const props = defineProps<Props>()
+const emit = defineEmits<{
+  update: [user: User]
+}>()
+
+// 3️⃣ Reactive State
+const isEditing = ref(false)
+
+// 4️⃣ Computed Properties
+const displayName = computed(() => props.user.name.toUpperCase())
+
+// 5️⃣ Functions
+const handleUpdate = () => {
+  emit('update', props.user)
+}
+</script>
+
+<template>
+  <div class="user-card">
+    <h3>{{ displayName }}</h3>
+    <button @click="handleUpdate">Update</button>
+  </div>
+</template>
+
+<style scoped>
+.user-card {
+  padding: var(--space-16);
+  background: var(--color-surface);
+}
+</style>
+```
+
+### **Naming Conventions**
+
+```
+✅ Komponenten:     PascalCase (UserProfile.vue)
+✅ Composables:     camelCase + use Prefix (useAuth.ts)
+✅ Stores:          camelCase + Store Suffix (authStore.ts)
+✅ Services:        camelCase + Service Suffix (authService.ts)
+✅ Types/Interfaces: PascalCase (User.ts, LoginResponse.ts)
+✅ Utilities:       camelCase (tokenManager.ts, errorHandler.ts)
+```
 
 ---
 
 ## 🔌 API-Integration
 
-### Backend-Verbindung
+### **Backend-Verbindung**
 
-Die Frontend-App kommuniziert mit dem Backend über REST-API:
+```typescript
+// ✅ Environment Variables
+// .env.local (nicht in Git)
+VITE_API_URL=http://localhost:3001/api
+VITE_APP_TITLE=Webtech-2025
+```
 
-- **Development:** `http://localhost:3001`
-- **Production:** 🚧 (wird konfiguriert)
+### **Axios Konfiguration** (src/services/api.ts)
 
-### Axios Setup 🚧
-
-// src/services/api.ts (geplant)
-import axios from 'axios'
-
+```typescript
+// ✅ HTTP Client mit Auth-Interceptor
 const api = axios.create({
-baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001',
-headers: {
-'Content-Type': 'application/json'
-}
+  baseURL: import.meta.env.VITE_API_URL,
+  timeout: 10000  // 10 Sekunden Timeout
 })
 
-// Auth-Interceptor für JWT
-api.interceptors.request.use(config => {
-const token = localStorage.getItem('accessToken')
-if (token) {
-config.headers.Authorization = Bearer ${token}
-}
-return config
+// Request Interceptor: Token automatisch hinzufügen
+api.interceptors.request.use((config) => {
+  const token = tokenManager.getAccessToken()
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
 })
+
+// Response Interceptor: Token-Refresh bei 401
+api.interceptors.response.use(
+  response => response,
+  async error => {
+    if (error.response?.status === 401) {
+      // Token expired, try to refresh
+      const newToken = await tokenManager.refreshToken()
+      if (newToken) {
+        // Retry original request
+        return api(error.config)
+      }
+    }
+    throw error
+  }
+)
+```
+
+### **Auth Service** (src/services/authService.ts)
+
+```typescript
+// ✅ API-Calls für Authentifizierung
+export const authService = {
+  async register(data: RegisterData) {
+    const response = await api.post('/auth/register', data)
+    const { user, accessToken, refreshToken } = response.data
+    
+    // Token speichern
+    tokenManager.setTokens(accessToken, refreshToken)
+    
+    return { user, accessToken, refreshToken }
+  },
+  
+  async login(credentials: LoginCredentials) {
+    const response = await api.post('/auth/login', credentials)
+    const { user, accessToken, refreshToken } = response.data
+    
+    tokenManager.setTokens(accessToken, refreshToken)
+    
+    return { user, accessToken, refreshToken }
+  },
+  
+  async logout() {
+    try {
+      await api.post('/auth/logout')
+    } finally {
+      tokenManager.clearTokens()
+    }
+  }
+}
+```
+
+---
+
+## 📱 Routing & Navigation
+
+### **Route Definition** (src/router/index.ts)
+
+```typescript
+const routes = [
+  {
+    path: '/',
+    name: 'Home',
+    component: () => import('@/views/LandingPage.vue'),
+    meta: { requiresAuth: false }  // Öffentlich
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/infoletter',
+    name: 'Dashboard',
+    component: () => import('@/views/InfoletterFeed.vue'),
+    meta: { requiresAuth: true }  // Geschützt!
+  }
+]
+```
+
+### **Lazy Loading**
+
+```typescript
+// ✅ Komponenten nur laden wenn nötig
+component: () => import('@/views/DashboardView.vue')
+
+// Benefit: Schnellerer Initial Load, größere Chunks später
+```
+
+---
+
+## 🔐 Authentication Flow
+
+### **1. Initialization (main.ts)**
+
+```typescript
+// ✅ App-Start: Token aus localStorage laden
+const authStore = useAuthStore()
+await authStore.initializeAuth()  // Lädt user vom /auth/me endpoint
+app.mount('#app')  // DANN erst rendern
+```
+
+### **2. Login (LoginView.vue)**
+
+```typescript
+// ✅ Benutzer registriert/loggt sich ein
+await authStore.login(email, password)
+// → user.value wird gesetzt (reactive!)
+// → isAuthenticated = true
+// → Header aktualisiert sich SOFORT
+await router.push('/infoletter')
+```
+
+### **3. Protected Routes (beforeEach Guard)**
+
+```typescript
+// ✅ Jede Route wird geprüft
+if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+  // Kein Zugriff, redirect zu /login
+  next('/login')
+} else {
+  // Zugriff erlaubt
+  next()
+}
+```
+
+### **4. Logout (App.vue)**
+
+```typescript
+// ✅ Benutzer klickt Abmelden
+await authStore.logout()
+// → user.value wird auf null gesetzt (reactive!)
+// → isAuthenticated = false
+// → Header aktualisiert sich SOFORT
+await router.push('/')
+```
 
 ---
 
 ## 🧪 Development Best Practices
 
-### Komponenten-Konventionen
+### **1. Komponenten-Struktur**
 
-<script setup lang="ts"> // 1. Imports import { ref, computed } from 'vue' import type { User } from '@/models/User' // 2. Props & Emits interface Props { user: User } const props = defineProps<Props>() const emit = defineEmits<{ update: [user: User] }>() // 3. Reactive State const isEditing = ref(false) // 4. Computed Properties const displayName = computed(() => props.user.name) // 5. Functions function handleUpdate() { emit('update', props.user) } </script> <template> <!-- Template hier --> </template> <style scoped> /* Styles hier */ </style>
+```
+✅ ONE component responsibility
+✅ Props für Input, Emits für Output
+✅ Scoped Styles (keine globalen Conflicts)
+✅ TypeScript Types für Props/Emits
+```
 
-### Naming Conventions
+### **2. State Management**
 
-- **Komponenten:** PascalCase (`UserProfile.vue`)
-- **Composables:** camelCase mit `use` Prefix (`useAuth.ts`)
-- **Stores:** camelCase mit `use` Prefix und `Store` Suffix (`useAuthStore.ts`)
-- **Services:** camelCase mit `Service` Suffix (`authService.ts`)
+```
+✅ Kleine State in components (form inputs)
+✅ Global State in Pinia (auth, user data)
+✅ Keine Props Drilling (Pinia statt data passing)
+```
 
----
+### **3. Error Handling**
 
-## 📱 Routing
-
-// src/router/index.ts
-const routes = [
-{
-path: '/',
-name: 'Home',
-component: () => import('@/views/HomeView.vue')
-},
-{
-path: '/login',
-name: 'Login',
-component: () => import('@/views/LoginView.vue')
-},
-{
-path: '/dashboard',
-name: 'Dashboard',
-component: () => import('@/views/DashboardView.vue'),
-meta: { requiresAuth: true }
+```typescript
+// ✅ Alle API-Calls mit try-catch
+try {
+  await authStore.login(email, password)
+} catch (error) {
+  if (error instanceof ApiError) {
+    showErrorMessage(getErrorMessage(error))
+  }
 }
-]
-
-### Navigation Guards 🚧
-
-router.beforeEach((to, from, next) => {
-const authStore = useAuthStore()
-
-if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-next('/login')
-} else {
-next()
-}
-})
+```
 
 ---
 
@@ -236,22 +480,36 @@ next()
 
 Erstelle `.env.local` für lokale Entwicklung:
 
-VITE_API_URL=http://localhost:3001
+```env
+# API
+VITE_API_URL=http://localhost:3001/api
+
+# App Title
 VITE_APP_TITLE=Webtech-2025
 
-Verwendung im Code:
+# Optional
+VITE_DEBUG=true
+```
 
+**Verwendung im Code:**
+
+```typescript
 const apiUrl = import.meta.env.VITE_API_URL
+const appTitle = import.meta.env.VITE_APP_TITLE
+```
 
 ---
 
 ## 🎨 VSCode Extensions (empfohlen)
 
-- **Volar** – Vue 3 Language Support
-- **TypeScript Vue Plugin (Volar)** – TS Support in Vue
-- **ESLint** – Code Quality
-- **Prettier** – Code Formatting
-- **Vue VSCode Snippets** – Schnelle Snippets
+```
+✅ Volar - Vue 3 Language Support
+✅ TypeScript Vue Plugin (Volar)
+✅ ESLint - Code Quality
+✅ Prettier - Code Formatting
+✅ Vue VSCode Snippets - Quick Snippets
+✅ Tailwind CSS IntelliSense - CSS Hints
+```
 
 ---
 
@@ -259,30 +517,43 @@ const apiUrl = import.meta.env.VITE_API_URL
 
 ### Port bereits belegt
 
-Anderen Port verwenden
+```bash
 npm run dev -- --port 5174
+```
 
 ### Type Errors
 
-TypeScript Cache löschen
+```bash
 rm -rf node_modules/.vite
 npm run dev
+```
 
 ### Hot Reload funktioniert nicht
 
-Vite Cache löschen
+```bash
 rm -rf node_modules/.vite
 npm install
+npm run dev
+```
+
+### CORS Errors
+
+✅ Prüfe: Backend läuft auf http://localhost:3001?
+✅ Prüfe: VITE_API_URL in .env.local korrekt?
+✅ Prüfe: Backend CORS konfiguriert für localhost:5173?
 
 ---
 
 ## 📖 Weitere Ressourcen
 
 - [Vue 3 Dokumentation](https://vuejs.org/)
-- [Vue Router Docs](https://router.vuejs.org/)
 - [Pinia Docs](https://pinia.vuejs.org/)
+- [Vue Router Docs](https://router.vuejs.org/)
 - [Vite Docs](https://vitejs.dev/)
 - [TypeScript Docs](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Hauptprojekt README](../README.md)
+- [Authentifizierung Docs](../AUTHENTICATION_FIX_SUMMARY.md)
 
 ---
 
