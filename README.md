@@ -252,7 +252,7 @@ router.beforeEach(async (to, from, next) => {
   - Input Validation (Zod)
 
 #### **Prisma ORM**
-> **Warum Prisma?** Type-safe Database Access. Auto-generates TypeScript Types aus Schema. Einfache Migrations und Seeding. Better SQL-Injection Protection.
+> **Warum Prisma?** Type-safe Database Access. Auto-generates TypeScript Types aus Schema. Einfache Migrations und Seeding. Bessere SQL-Injection Protection.
 
 ```prisma
 // prisma/schema.prisma
@@ -415,7 +415,6 @@ VITE_API_URL=http://localhost:3001/api
 ### Dokumentation
 - [Frontend README](./frontend/README.md) – Vue 3 Setup und Architektur
 - [Backend README](./backend/README.md) – API-Dokumentation
-- [AUTHENTICATION_FIX_SUMMARY.md](./AUTHENTICATION_FIX_SUMMARY.md) – Auth-System Erklärung
 
 ### Offizielle Docs
 - [Vue 3 Dokumentation](https://vuejs.org/)
