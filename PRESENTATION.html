@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webtech-2025: Infoletter Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .presentation {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .slide {
+            background: white;
+            width: 960px;
+            height: 540px;
+            margin: 20px auto;
+            padding: 60px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            page-break-after: always;
+            overflow: hidden;
+        }
+
+        /* Title Slide */
+        .slide.title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .slide.title h1 {
+            font-size: 56px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .slide.title h2 {
+            font-size: 32px;
+            margin-bottom: 40px;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        .slide.title .subtitle {
+            font-size: 18px;
+            margin-top: 60px;
+            opacity: 0.85;
+        }
+
+        /* Content Slides */
+        .slide h2 {
+            font-size: 44px;
+            color: #667eea;
+            margin-bottom: 40px;
+            border-bottom: 4px solid #667eea;
+            padding-bottom: 20px;
+        }
+
+        .slide h3 {
+            font-size: 24px;
+            color: #333;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .slide p, .slide li {
+            font-size: 20px;
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .slide ul {
+            margin-left: 40px;
+        }
+
+        .slide li {
+            margin-bottom: 20px;
+        }
+
+        .slide li strong {
+            color: #667eea;
+        }
+
+        /* Tech Stack Styling */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .tech-box {
+            background: #f8f9ff;
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .tech-box h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .tech-box ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .tech-box li {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+
+        .tech-box li:before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        /* Feature Section */
+        .features {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .feature {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .feature h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .feature p {
+            font-size: 16px;
+            margin: 0;
+        }
+
+        /* Demo Section */
+        .demo-section {
+            background: #f0f4ff;
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .demo-section h3 {
+            color: #667eea;
+            margin-top: 0;
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+        }
+
+        .two-column h3 {
+            grid-column: 1 / -1;
+            margin-top: 0;
+        }
+
+        .two-column ul {
+            margin: 0;
+        }
+
+        /* Team Section */
+        .team-box {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .team-member {
+            margin-bottom: 20px;
+        }
+
+        .team-member:last-child {
+            margin-bottom: 0;
+        }
+
+        .team-member strong {
+            color: #667eea;
+            font-size: 18px;
+        }
+
+        .team-member p {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+
+        /* Thank You Slide */
+        .slide.thank-you {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .slide.thank-you h1 {
+            font-size: 64px;
+            margin-bottom: 40px;
+        }
+
+        .slide.thank-you p {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .slide {
+                margin: 0;
+                page-break-after: always;
+                box-shadow: none;
+                border-radius: 0;
+            }
+        }
+
+        /* Code Block */
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="presentation">
+
+    <!-- SLIDE 1: Title Slide -->
+    <div class="slide title">
+        <h1>Webtech-2025</h1>
+        <h2>Infoletter Management System</h2>
+        <p class="subtitle">Eine moderne Web-Anwendung mit Vue 3, Node.js und PostgreSQL</p>
+        <p class="subtitle" style="margin-top: 80px; font-size: 16px;">Team: [Name 1] & [Name 2]</p>
+    </div>
+
+    <!-- SLIDE 2: Motivation & Thema -->
+    <div class="slide">
+        <h2>🎯 Motivation & Thema</h2>
+        <div class="two-column">
+            <h3 style="grid-column: 1 / -1;">Warum ein Infoletter Management System?</h3>
+            <ul>
+                <li><strong>Problem:</strong> Newsletter-Verwaltung ist zeitaufwändig</li>
+                <li><strong>Lösung:</strong> Zentrales, benutzerfreundliches Management</li>
+                <li><strong>Fokus:</strong> Kollaboration und Versionskontrolle</li>
+                <li><strong>Zielgruppe:</strong> Content Teams und Publishers</li>
+            </ul>
+            <div>
+                <h4 style="color: #667eea; margin-bottom: 10px;">Kernfeatures:</h4>
+                <ul style="margin-left: 20px;">
+                    <li>✅ Infoletter erstellen & bearbeiten</li>
+                    <li>✅ Kollaborativer Zugriff</li>
+                    <li>✅ Versionskontrolle</li>
+                    <li>✅ Image Upload</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: Features Übersicht -->
+    <div class="slide">
+        <h2>✨ Implementierte Features</h2>
+        <div class="features">
+            <div class="feature">
+                <h4>1️⃣ UI-Elemente</h4>
+                <p>Professionelle Benutzeroberfläche mit Text, Buttons, Bildern und responsivem Design</p>
+            </div>
+            <div class="feature">
+                <h4>2️⃣ Formulare & Dialoge</h4>
+                <p>Registrierung, Login, Infoletter erstellen & löschen mit validiertem Input</p>
+            </div>
+            <div class="feature">
+                <h4>3️⃣ Persistente Daten</h4>
+                <p>PostgreSQL Datenbank mit Prisma ORM, Audit Logging und Soft Deletes</p>
+            </div>
+            <div class="feature">
+                <h4>4️⃣ Navigation</h4>
+                <p>Globaler Header, Route Guards, Responsive Design mit Tailwind CSS</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: Technologie-Stack -->
+    <div class="slide">
+        <h2>🛠️ Technologie-Stack</h2>
+        <div class="tech-grid">
+            <div class="tech-box">
+                <h4>Frontend</h4>
+                <ul>
+                    <li>Vue 3 Composition API</li>
+                    <li>TypeScript</li>
+                    <li>Pinia State Management</li>
+                    <li>Vue Router</li>
+                    <li>Tailwind CSS</li>
+                    <li>Vite</li>
+                </ul>
+            </div>
+            <div class="tech-box">
+                <h4>Backend</h4>
+                <ul>
+                    <li>Node.js + Express</li>
+                    <li>TypeScript</li>
+                    <li>Prisma ORM</li>
+                    <li>PostgreSQL</li>
+                    <li>JWT Authentication</li>
+                    <li>Bcrypt + Zod</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: Architecture -->
+    <div class="slide">
+        <h2>🏗️ Architektur</h2>
+        <h3>Frontend: Vue 3 Composition API</h3>
+        <ul>
+            <li><strong>App.vue:</strong> Global Header (Single Source of Truth)</li>
+            <li><strong>Pinia Stores:</strong> Reaktive State Management für Auth</li>
+            <li><strong>Router Guards:</strong> Protected Routes mit Auth-Checks</li>
+            <li><strong>Services:</strong> Axios für API-Kommunikation mit Token-Refresh</li>
+        </ul>
+        <h3 style="margin-top: 30px;">Backend: Express + Prisma</h3>
+        <ul>
+            <li><strong>Controllers:</strong> Request Handler</li>
+            <li><strong>Services:</strong> Business Logic</li>
+            <li><strong>Middleware:</strong> Auth, Validation, Error Handling</li>
+            <li><strong>Database:</strong> PostgreSQL mit Migrations</li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 6: Live Demo Placeholder -->
+    <div class="slide">
+        <h2>💻 Live Demo</h2>
+        <div class="demo-section">
+            <h3>Präsentation der Anwendung</h3>
+            <p style="font-size: 18px; margin: 20px 0;">✏️ [Screenshot der Landing Page hier einfügen]</p>
+            <p style="font-size: 18px; margin: 20px 0;">🔐 [Screenshot der Login/Register Page hier einfügen]</p>
+            <p style="font-size: 18px; margin: 20px 0;">📊 [Screenshot des Dashboards hier einfügen]</p>
+        </div>
+        <ul style="margin-top: 30px;">
+            <li>Responsive Design auf Mobile & Desktop</li>
+            <li>Instant Header Updates nach Login</li>
+            <li>Nahtlose Navigation zwischen Seiten</li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 7: Aufgabenteilung -->
+    <div class="slide">
+        <h2>👥 Aufgabenteilung</h2>
+        <div class="team-box">
+            <div class="team-member">
+                <strong>[Name 1]</strong>
+                <p>Frontend-Entwicklung</p>
+                <p style="font-size: 16px; color: #888;">Vue 3, Pinia, Router, Tailwind CSS, UI-Komponenten</p>
+            </div>
+            <div class="team-member">
+                <strong>[Name 2]</strong>
+                <p>Backend-Entwicklung</p>
+                <p style="font-size: 16px; color: #888;">Node.js, Express, Prisma, PostgreSQL, Authentifizierung</p>
+            </div>
+        </div>
+        <h3 style="margin-top: 40px;">Gemeinsame Aufgaben:</h3>
+        <ul>
+            <li>Projekt-Setup und Architektur-Design</li>
+            <li>Git & GitHub Workflow</li>
+            <li>API-Integration & Debugging</li>
+            <li>Dokumentation</li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 8: Security & Best Practices -->
+    <div class="slide">
+        <h2>🔒 Security & Best Practices</h2>
+        <h3>Sicherheitsmaßnahmen:</h3>
+        <ul>
+            <li><strong>Password Hashing:</strong> Bcrypt mit 10 Salt Rounds</li>
+            <li><strong>JWT Authentication:</strong> Access Token (1h) + Refresh Token (7d)</li>
+            <li><strong>Input Validation:</strong> Zod Schema auf Backend</li>
+            <li><strong>CORS:</strong> Nur localhost:5173 erlaubt</li>
+        </ul>
+        <h3>Code-Qualität:</h3>
+        <ul>
+            <li>TypeScript für Type-Safety</li>
+            <li>Composition API Pattern für Wiederverwendbarkeit</li>
+            <li>Service/Controller Separation</li>
+            <li>Umfassend kommentiert & dokumentiert</li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 9: Reflexion: LLM-Nutzung -->
+    <div class="slide">
+        <h2>🤖 Reflexion: Large Language Models</h2>
+        <h3>Was war gut:</h3>
+        <ul>
+            <li><strong>Code-Snippets:</strong> Schnelle Referenzen für Best Practices</li>
+            <li><strong>Dokumentation:</strong> README-Erstellung und Erklärungen</li>
+            <li><strong>Debugging:</strong> Hilfe bei Error-Analyse und Lösungen</li>
+            <li><strong>Architecture:</strong> Diskussion von Design Patterns</li>
+        </ul>
+        <h3>Was war herausfordernd:</h3>
+        <ul>
+            <li><strong>Originalcode:</strong> Keine Copy-Paste - Alles manuell angepasst</li>
+            <li><strong>Context-Grenzen:</strong> Manchmal technische Gaps selbst schließen</li>
+            <li><strong>Testing:</strong> LLM konnte Performance-Issues nicht vorhersagen</li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 10: Ausblick & Verbesserungen -->
+    <div class="slide">
+        <h2>🚀 Ausblick & Geplante Features</h2>
+        <h3>Short-Term (Nächste Wochen):</h3>
+        <ul>
+            <li>✉️ Email-Versand von Infolettern</li>
+            <li>📱 Progressive Web App (PWA)</li>
+            <li>🔄 Token Refresh Auto-Renewal</li>
+        </ul>
+        <h3>Mid-Term (Nächste Monate):</h3>
+        <ul>
+            <li>🤝 Echtzeit-Kollaboration (WebSockets)</li>
+            <li>📊 Analytics & Tracking</li>
+            <li>🎨 Rich-Text Editor (TipTap)</li>
+            <li>🏆 Admin-Panel</li>
+        </ul>
+        <h3>Long-Term (Vision):</h3>
+        <ul>
+            <li>🌍 Multi-Language Support</li>
+            <li>💳 Subscription Model</li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 11: Lessons Learned -->
+    <div class="slide">
+        <h2>📚 Lessons Learned</h2>
+        <h3>Frontend:</h3>
+        <ul>
+            <li>Reactive State Management ist essentiell für Echtzeit-Updates</li>
+            <li>Global Header Pattern vereinfacht Navigation & State-Synchronization</li>
+            <li>TypeScript spart viel Debugging-Zeit</li>
+        </ul>
+        <h3>Backend:</h3>
+        <ul>
+            <li>Prisma ORM mit Migrations ist produktiv & wartbar</li>
+            <li>Service/Controller Separation macht Code testbar</li>
+            <li>Middleware Stack Order ist kritisch</li>
+        </ul>
+        <h3>Team:</h3>
+        <ul>
+            <li>Gutes Git Workflow ist essentiell bei Teamarbeit</li>
+            <li>Klare API-Contracts zwischen Frontend & Backend</li>
+        </ul>
+    </div>
+
+    <!-- SLIDE 12: Zusammenfassung -->
+    <div class="slide">
+        <h2>📋 Zusammenfassung</h2>
+        <h3>Was wir erreicht haben:</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px;">
+            <div>
+                <p>✅ Vollständige Web-Anwendung</p>
+                <p>✅ Authentifizierung & Auth</p>
+                <p>✅ Persistente Datenbank</p>
+                <p>✅ Responsive UI</p>
+            </div>
+            <div>
+                <p>✅ REST API Backend</p>
+                <p>✅ Type-Safe Code</p>
+                <p>✅ Umfassende Docs</p>
+                <p>✅ Production-Ready</p>
+            </div>
+        </div>
+        <div style="background: #f8f9ff; padding: 20px; border-radius: 6px; margin-top: 30px;">
+            <p style="font-size: 18px; color: #667eea;"><strong>GitHub Repository:</strong> Hello-N00del/Webtech-2025</p>
+            <p style="font-size: 18px; color: #667eea;"><strong>Frontend:</strong> http://localhost:5173</p>
+            <p style="font-size: 18px; color: #667eea;"><strong>Backend API:</strong> http://localhost:3001/api</p>
+        </div>
+    </div>
+
+    <!-- SLIDE 13: Thank You -->
+    <div class="slide thank-you">
+        <h1>Vielen Dank! 🙏</h1>
+        <p>Fragen?</p>
+        <p style="margin-top: 60px; font-size: 20px;">Code-Walkthrough vorbereitet</p>
+        <p style="font-size: 20px;">Live-Demo möglich</p>
+    </div>
+
+</div>
+
+<script>
+    // Print-freundliche Hinweise
+    window.addEventListener('beforeprint', () => {
+        console.log('Tipp: Verwende "Hintergrund-Grafiken drucken" für beste Ergebnisse!');
+    });
+</script>
+
+</body>
+</html>
